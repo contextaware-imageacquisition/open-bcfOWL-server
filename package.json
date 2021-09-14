@@ -1,0 +1,40 @@
+{
+  "name": "bcfserver",
+  "version": "1.0.0",
+  "description": "A Node.js Bcf Server implementation",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "keywords": [
+    "node",
+    "restful",
+    "api",
+    "bcf"
+  ],
+  "author": "Oliver Schulz",
+  "license": "MIT",
+  "repository": "https://github.com/Design-Computation-RWTH/bcfServer",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "license-checker": "^25.0.1",
+    "mongoose": "^5.12.14",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.2",
+    "node-fetch": "^2.6.1",
+    "odata-parser": "^1.4.1",
+    "odata-resource": "^2.0.0",
+    "request": "^2.88.2",
+    "swagger-ui-express": "^4.1.6",
+    "uuid": "^8.2.0",
+    "yui-lint": "^0.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
