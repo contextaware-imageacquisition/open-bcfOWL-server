@@ -5,6 +5,7 @@ exports.sparql_query_endpoint = (req, res, next) => {
 
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   var urlencoded = new URLSearchParams();
   urlencoded.append("query", req.body.query);

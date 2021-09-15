@@ -1,18 +1,20 @@
 const fetch = require("node-fetch");
 const sparqlConverter = require("./Utilities/SparqlJsonConverter");
 const uuid = require("uuid");
+const fuseki = require("./Utilities/FusekiUtilities");
 
 exports.get_all_viewpoints = (req, res, next) => {
   const projectId = req.params.projectId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   var urlencoded = new URLSearchParams();
   urlencoded.append(
     "query",
     `
     \nPREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/> 
-    \nPREFIX inst: <http://example.org#>
+    \nPREFIX project: <${process.env.BCF_URL + projectId}#>
     \nPREFIX geo: <http://www.opengis.net/ont/geosparql#>
     
     \nSELECT DISTINCT ?s ?p ?o WHERE {
@@ -186,27 +188,28 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
   const topicId = req.params.topicId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   var urlencoded = new URLSearchParams();
   urlencoded.append(
     "query",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/> 
-    PREFIX inst: <http://example.org#>
+    PREFIX project: <${process.env.BCF_URL + projectId}#>
     PREFIX geo: <http://www.opengis.net/ont/geosparql#>
     
     SELECT DISTINCT ?s ?p ?o WHERE {
       {
         SELECT *
         WHERE {
-            ?s	bcfOWL:hasTopic inst:${topicId} .
+            ?s	bcfOWL:hasTopic project:${topicId} .
             ?s 	a 	bcfOWL:Viewpoint ;
                 ?p	?o .
           }
       } UNION {
           SELECT *
         WHERE {
-            ?x	bcfOWL:hasTopic inst:${topicId} .
+            ?x	bcfOWL:hasTopic project:${topicId} .
               ?x	bcfOWL:hasPerspectiveCamera ?s .
               ?s	a	bcfOWL:PerspectiveCamera ;
                   ?p ?o .
@@ -214,7 +217,7 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
       } UNION {
           SELECT *
         WHERE {
-            ?x	bcfOWL:hasTopic inst:${topicId} .
+            ?x	bcfOWL:hasTopic project:${topicId} .
               ?x	bcfOWL:hasSelection ?s .
               ?s	a bcfOWL:Component;
                 ?p ?o .
@@ -222,7 +225,7 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
       } UNION {
           SELECT *
         WHERE {
-            ?x	bcfOWL:hasTopic inst:${topicId} .
+            ?x	bcfOWL:hasTopic project:${topicId} .
               ?x	bcfOWL:hasException ?s .
             ?s	a bcfOWL:Component;
                 ?p ?o .
@@ -371,20 +374,21 @@ exports.get_viewpoint = (req, res, next) => {
   const viewpointId = req.params.viewpointId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   var urlencoded = new URLSearchParams();
   urlencoded.append(
     "query",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/> 
-    PREFIX inst: <http://example.org#>
+    PREFIX project: <${process.env.BCF_URL + projectId}#>
     PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 
     SELECT DISTINCT ?s ?p ?o WHERE {
     {
         SELECT *
         WHERE {
-            ?s	bcfOWL:hasTopic inst:${topicId} .
+            ?s	bcfOWL:hasTopic project:${topicId} .
             ?s	bcfOWL:hasGuid	"${viewpointId}" .
             ?s 	a 	bcfOWL:Viewpoint ;
                 ?p	?o .
@@ -392,7 +396,7 @@ exports.get_viewpoint = (req, res, next) => {
     } UNION {
         SELECT *
         WHERE {
-            ?x	bcfOWL:hasTopic inst:${topicId} .
+            ?x	bcfOWL:hasTopic project:${topicId} .
             ?x	bcfOWL:hasGuid	"${viewpointId}" .
             ?x	bcfOWL:hasPerspectiveCamera ?s .
             ?s	a	bcfOWL:PerspectiveCamera ;
@@ -401,7 +405,7 @@ exports.get_viewpoint = (req, res, next) => {
     } UNION {
         SELECT *
         WHERE {
-            ?x	bcfOWL:hasTopic inst:${topicId} .
+            ?x	bcfOWL:hasTopic project:${topicId} .
             ?x	bcfOWL:hasGuid	"${viewpointId}" .
             ?x	bcfOWL:hasSelection ?s .
             ?s	a bcfOWL:Component;
@@ -410,7 +414,7 @@ exports.get_viewpoint = (req, res, next) => {
     } UNION {
         SELECT *
         WHERE {
-            ?x	bcfOWL:hasTopic inst:${topicId} .
+            ?x	bcfOWL:hasTopic project:${topicId} .
             ?x	bcfOWL:hasGuid	"${viewpointId}" .
             ?x	bcfOWL:hasException ?s .
             ?s	a bcfOWL:Component;
@@ -560,6 +564,7 @@ exports.post_viewpoint = (req, res, next) => {
   const topicId = req.params.topicId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   if (req.body.guid) {
     viewpointId = req.body.guid;
@@ -573,19 +578,19 @@ exports.post_viewpoint = (req, res, next) => {
     "update",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-    PREFIX inst: <http://example.org#>
+    PREFIX project: <${process.env.BCF_URL + projectId}#>
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     PREFIX geo: <http://www.opengis.net/ont/geosparql#>
     
     INSERT {
-      inst:${viewpointId} a bcfOWL:Viewpoint ;
+      project:${viewpointId} a bcfOWL:Viewpoint ;
         bcfOWL:hasGuid "${viewpointId}"^^xsd:string ;
-        bcfOWL:hasTopic inst:${topicId} ;
-        bcfOWL:hasProject inst:${projectId} ;\n` +
+        bcfOWL:hasTopic project:${topicId} ;
+        bcfOWL:hasProject project:${projectId} ;\n` +
       sparqlConverter.toViewpointSPARQL(req) +
       `} WHERE {
         ?s ?p ?o
-        FILTER NOT EXISTS { inst:${viewpointId} ?p ?o} 
+        FILTER NOT EXISTS { project:${viewpointId} ?p ?o} 
         }
       `
   );

@@ -1,6 +1,27 @@
 const uuid = require("uuid");
 const guid = require("./GuidConverter");
 
+function splitURI(URI) {
+  if (URI.split("#").length > 0) {
+    var stringArray = URI.split("#");
+  } else {
+    var stringArray = URI.split("/");
+  }
+  var string = stringArray[stringArray.length - 1];
+  return string.replace("_", " ");
+}
+
+function setExtensionString(extension) {
+  string = "";
+
+  for (value in extension) {
+    string += ` project:${extension[value].replace(" ", "_")},`;
+  }
+  string = string.slice(0, -1) + ";";
+
+  return string;
+}
+
 function toTopicJson(binding) {
   var convertedValue = {};
   if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasGuid") {
@@ -79,6 +100,19 @@ function toTopicJson(binding) {
     }
 
     convertedValue["priority"] = stringArray[stringArray.length - 1];
+  }
+
+  return convertedValue;
+}
+
+function toProjectJson(binding) {
+  var convertedValue = {};
+  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasGuid") {
+    convertedValue["project_id"] = binding.o.value;
+  } else if (
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasName"
+  ) {
+    convertedValue["name"] = binding.o.value;
   }
 
   return convertedValue;
@@ -258,6 +292,105 @@ function toViewpointJson(binding) {
   return convertedValue;
 }
 
+function toExtensionJson(response) {
+  var bindings = response.results.bindings;
+  var extensions = {};
+  var types = [];
+  var status = [];
+  var labels = [];
+  var priorities = [];
+  var users = [];
+  var stages = [];
+
+  for (binding in bindings) {
+    if (
+      bindings[binding].p.value ==
+      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasLabels"
+    ) {
+      value = bindings[binding].o.value;
+      labels.push(splitURI(value));
+    }
+    if (
+      bindings[binding].p.value ==
+      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTopicStatus"
+    ) {
+      value = bindings[binding].o.value;
+      status.push(splitURI(value));
+    }
+    if (
+      bindings[binding].p.value ==
+      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTopicType"
+    ) {
+      value = bindings[binding].o.value;
+      types.push(splitURI(value));
+    }
+    if (
+      bindings[binding].p.value ==
+      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasPriority"
+    ) {
+      value = bindings[binding].o.value;
+      priorities.push(splitURI(value));
+    }
+    if (
+      bindings[binding].p.value ==
+      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasStage"
+    ) {
+      value = bindings[binding].o.value;
+      stages.push(splitURI(value));
+    }
+    if (
+      bindings[binding].p.value ==
+      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasUser"
+    ) {
+      value = bindings[binding].o.value;
+      users.push(splitURI(value));
+    }
+  }
+  extensions["topic_type"] = types;
+  extensions["topic_status"] = status;
+  extensions["topic_label"] = labels;
+  extensions["priority"] = priorities;
+  extensions["users"] = users;
+  extensions["stage"] = stages;
+
+  return extensions;
+}
+
+function toExtensionSPARQL(request) {
+  var query = "";
+  const types = request.topic_type;
+  const status = request.topic_status;
+  const label = request.topic_label;
+  const priority = request.priority;
+  const users = request.users;
+  const stages = request.stage;
+
+  if (types) {
+    query += `\nbcfOWL:hasTopicType` + setExtensionString(types);
+  }
+
+  if (status) {
+    query += `\nbcfOWL:hasTopicStatus` + setExtensionString(status);
+  }
+
+  if (status) {
+    query += `\nbcfOWL:hasLabels` + setExtensionString(label);
+  }
+
+  if (status) {
+    query += `\nbcfOWL:hasPriority` + setExtensionString(priority);
+  }
+
+  if (status) {
+    query += `\nbcfOWL:hasStage` + setExtensionString(stages);
+  }
+
+  if (status) {
+    query += `\nbcfOWL:hasUser` + setExtensionString(users);
+  }
+
+  return query;
+}
 // Converts a BCF JSON Topic Request body to SPARQL Queries
 function toTopicSPARQL(request) {
   var sparqlString = "";
@@ -267,29 +400,29 @@ function toTopicSPARQL(request) {
   }
 
   if (request.body.topic_type) {
-    sparqlString += `\n bcfOWL:hasTopicType inst:${request.body.topic_type} ;`;
+    sparqlString += `\n bcfOWL:hasTopicType project:${request.body.topic_type} ;`;
   }
 
   if (request.body.topic_status) {
-    sparqlString += `\n bcfOWL:hasTopicStatus inst:${request.body.topic_status} ;`;
+    sparqlString += `\n bcfOWL:hasTopicStatus project:${request.body.topic_status} ;`;
   }
 
   if (request.body.priority) {
-    sparqlString += `\n bcfOWL:hasPriority inst:${request.body.priority} ;`;
+    sparqlString += `\n bcfOWL:hasPriority project:${request.body.priority} ;`;
   }
 
   if (request.body.assigned_to) {
-    sparqlString += `\n bcfOWL:hasAssignedTo inst:${request.body.assigned_to} ;`;
+    sparqlString += `\n bcfOWL:hasAssignedTo project:${request.body.assigned_to} ;`;
   }
 
   if (request.body.stage) {
-    sparqlString += `\n bcfOWL:hasStage inst:${request.body.stage};`;
+    sparqlString += `\n bcfOWL:hasStage project:${request.body.stage};`;
   }
 
   if (request.body.labels) {
     var labelString = "";
     for (label in request.body.labels) {
-      labelString += ` inst:${request.body.labels[label]}, `;
+      labelString += ` project:${request.body.labels[label]}, `;
     }
     labelString = labelString.slice(0, -2);
     console.log(labelString.toString());
@@ -308,7 +441,7 @@ function toCommentSPARQL(request) {
   }
 
   if (request.body.viewpoint_guid) {
-    sparqlString += `\n bcfOWL:hasViewpoint inst:${request.body.viewpoint_guid} ;`;
+    sparqlString += `\n bcfOWL:hasViewpoint project:${request.body.viewpoint_guid} ;`;
   }
 
   sparqlString = sparqlString.slice(0, -1) + ". \n";
@@ -326,11 +459,11 @@ function toViewpointSPARQL(request) {
   var exception = "";
 
   if (request.body.perspective_camera) {
-    sparqlString += `\n bcfOWL:hasPerspectiveCamera inst:${cameraId} ;`;
+    sparqlString += `\n bcfOWL:hasPerspectiveCamera project:${cameraId} ;`;
 
     console.log("perspective ");
     perspective_camera += `
-                    \n inst:${cameraId}
+                    \n project:${cameraId}
                       a                          bcfOWL:PerspectiveCamera ;
                       bcfOWL:hasAspectRatio      "${request.body.perspective_camera.aspect_ratio}"^^xsd:double ;
                       bcfOWL:hasCameraDirection  "POINT Z(${request.body.perspective_camera.camera_direction.x} ${request.body.perspective_camera.camera_direction.y} ${request.body.perspective_camera.camera_direction.z})"^^geo:wktLiteral ;
@@ -342,7 +475,7 @@ function toViewpointSPARQL(request) {
 
   //TODO: add else: orthogonal camera
   // if (request.body.orthogonal_camera) {
-  //   sparqlString += `\n bcfOWL:hasOrthogonalCamera inst:${cameraId} ;`;
+  //   sparqlString += `\n bcfOWL:hasOrthogonalCamera project:${cameraId} ;`;
   // }
 
   if (request.body.components.selection) {
@@ -350,21 +483,21 @@ function toViewpointSPARQL(request) {
 
     for (selectionElement in request.body.components.selection) {
       // convert guid from compressed to full
-      selectionString += ` inst:${guid.Guid.fromCompressedToFull(
+      selectionString += ` project:${guid.Guid.fromCompressedToFull(
         request.body.components.selection[selectionElement].ifc_guid
       )}, `;
 
       // constructing the selection components
 
       if (request.body.components.selection[selectionElement].ifc_guid) {
-        var componentString = `\n inst:${guid.Guid.fromCompressedToFull(
+        var componentString = `\n project:${guid.Guid.fromCompressedToFull(
           request.body.components.selection[selectionElement].ifc_guid
         )} a bcfOWL:Component ;`;
       }
       if (
         request.body.components.selection[selectionElement].originating_system
       ) {
-        componentString += `\n bcfOWL:hasOriginatingSystem  inst:${request.body.components.selection[selectionElement].originating_system} ;`;
+        componentString += `\n bcfOWL:hasOriginatingSystem  project:${request.body.components.selection[selectionElement].originating_system} ;`;
       }
       if (
         request.body.components.selection[selectionElement].authoring_tool_id
@@ -391,7 +524,7 @@ function toViewpointSPARQL(request) {
     var exceptionString = "";
 
     for (exceptionElement in request.body.components.visibility.exceptions) {
-      exceptionString += ` inst:${guid.Guid.fromCompressedToFull(
+      exceptionString += ` project:${guid.Guid.fromCompressedToFull(
         request.body.components.visibility.exceptions[exceptionElement].ifc_guid
       )}, `;
 
@@ -400,19 +533,19 @@ function toViewpointSPARQL(request) {
       if (
         request.body.components.visibility.exceptions[exceptionElement].ifc_guid
       ) {
-        var componentString = `\n inst:${guid.Guid.fromCompressedToFull(
+        var componentString = `\n project:${guid.Guid.fromCompressedToFull(
           request.body.components.visibility.exceptions[exceptionElement]
             .ifc_guid
         )} a bcfOWL:Component ;`;
       }
-      //   var componentString = `inst:${request.body.components.selection[selectionElement].authoring_tool_id} a bcfOWL:Component ;`;
+      //   var componentString = `project:${request.body.components.selection[selectionElement].authoring_tool_id} a bcfOWL:Component ;`;
       // }
 
       if (
         request.body.components.visibility.exceptions[exceptionElement]
           .originating_system
       ) {
-        componentString += `\n bcfOWL:hasOriginatingSystem  inst:${request.body.components.visibility.exceptions[exceptionElement].originating_system} ;`;
+        componentString += `\n bcfOWL:hasOriginatingSystem  project:${request.body.components.visibility.exceptions[exceptionElement].originating_system} ;`;
       }
       if (
         request.body.components.visibility.exceptions[exceptionElement]
@@ -519,4 +652,7 @@ module.exports = {
   toCommentSPARQL,
   toViewpointSPARQL,
   toTopicSPARQLUpdate,
+  toExtensionJson,
+  toProjectJson,
+  toExtensionSPARQL,
 };

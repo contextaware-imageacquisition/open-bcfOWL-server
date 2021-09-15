@@ -1,11 +1,13 @@
 const fetch = require("node-fetch");
 const sparqlConverter = require("./Utilities/SparqlJsonConverter");
 const uuid = require("uuid");
+const fuseki = require("./Utilities/FusekiUtilities");
 
 exports.get_all_comments = (req, res, next) => {
   const projectId = req.params.projectId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   var urlencoded = new URLSearchParams();
   urlencoded.append(
@@ -58,16 +60,17 @@ exports.get_all_topic_comments = (req, res, next) => {
   const topicId = req.params.topicId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   var urlencoded = new URLSearchParams();
   urlencoded.append(
     "query",
     `
         \nPREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-        \nPREFIX inst: <http://example.org#>
+        \nPREFIX project: <${process.env.BCF_URL + projectId}#>
         \nSELECT ?s ?p ?o
         \nWHERE {
-            \n?s	bcfOWL:hasTopic inst:${topicId} .
+            \n?s	bcfOWL:hasTopic project:${topicId} .
             \n?s a bcfOWL:Comment ;
             \n?p ?o .
             \n}
@@ -115,18 +118,19 @@ exports.get_comment = (req, res, next) => {
 
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   var urlencoded = new URLSearchParams();
   urlencoded.append(
     "query",
     `
     \nPREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-    \nPREFIX inst: <http://example.org#>
+    \nPREFIX project: <${process.env.BCF_URL + projectId}#>
     
     \nSELECT ?s ?p ?o
     
     \nWHERE {
-      \n?s	bcfOWL:hasTopic inst:${topicId} .
+      \n?s	bcfOWL:hasTopic project:${topicId} .
       \n?s	bcfOWL:hasGuid	"${commentId}" .
       \n?s 	a 	bcfOWL:Comment ;
         \n      ?p	?o .
@@ -161,6 +165,7 @@ exports.post_comment = (req, res, next) => {
   const topicId = req.params.topicId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   if (req.body.guid) {
     commentId = req.body.guid;
@@ -177,20 +182,20 @@ exports.post_comment = (req, res, next) => {
     "update",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-    PREFIX inst: <http://example.org#>
+    PREFIX project: <${process.env.BCF_URL + projectId}#>
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     
     INSERT {
-      inst:${commentId} a bcfOWL:Comment ;
+      project:${commentId} a bcfOWL:Comment ;
         bcfOWL:hasGuid "${commentId}"^^xsd:string ;
-        bcfOWL:hasTopic inst:${topicId} ;
-        bcfOWL:hasProject inst:${projectId} ;
-        bcfOWL:hasCreationAuthor inst:${author} ;
+        bcfOWL:hasTopic project:${topicId} ;
+        bcfOWL:hasProject project:${projectId} ;
+        bcfOWL:hasCreationAuthor project:${author} ;
         bcfOWL:hasCommentDate "${timestamp}"^^xsd:dateTime ;\n` +
       sparqlConverter.toCommentSPARQL(req) +
       `} WHERE {
         ?s ?p ?o
-        FILTER NOT EXISTS { inst:${commentId} ?p ?o} 
+        FILTER NOT EXISTS { project:${commentId} ?p ?o} 
         }
       `
   );
@@ -220,6 +225,7 @@ exports.put_comment = (req, res, next) => {
   const commentId = req.params.commentId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   var author = "JaneDoe";
 
@@ -230,7 +236,7 @@ exports.put_comment = (req, res, next) => {
     "update",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-    PREFIX inst: <http://example.org#>
+    PREFIX project: <${process.env.BCF_URL + projectId}#>
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     
     DELETE {
@@ -240,7 +246,7 @@ exports.put_comment = (req, res, next) => {
     }
     INSERT {
       ?s bcfOWL:hasComment "${req.body.comment}" .
-      ?s bcfOWL:hasModifiedAuthor inst:${author} .
+      ?s bcfOWL:hasModifiedAuthor project:${author} .
       ?s bcfOWL:hasModifiedDate "${timestamp}"^^xsd:dateTime .
     }
     Where {

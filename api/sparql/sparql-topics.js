@@ -1,11 +1,13 @@
 const fetch = require("node-fetch");
 const sparqlConverter = require("./Utilities/SparqlJsonConverter");
 const uuid = require("uuid");
+const fuseki = require("./Utilities/FusekiUtilities");
 
 exports.get_all_topics = (req, res, next) => {
   const projectId = req.params.projectId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   var urlencoded = new URLSearchParams();
   urlencoded.append(
@@ -28,7 +30,6 @@ exports.get_all_topics = (req, res, next) => {
   fetch(process.env.FUSEKI_URL + projectId, requestOptions)
     .then((response) => response.json())
     .then((result) => {
-      console.log(result);
       var bcfMap = {};
       var bcfReturn = [];
       for (value in result.results.bindings) {
@@ -58,6 +59,7 @@ exports.get_topic = (req, res, next) => {
   const topicId = req.params.topicId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   var urlencoded = new URLSearchParams();
   urlencoded.append(
@@ -99,6 +101,7 @@ exports.post_topic = (req, res, next) => {
   const projectId = req.params.projectId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   var topicId;
 
@@ -117,19 +120,19 @@ exports.post_topic = (req, res, next) => {
     "update",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-    PREFIX inst: <http://example.org#>
+    PREFIX project: <${process.env.BCF_URL + projectId}#>
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     
     INSERT {
-      inst:${topicId}	a	bcfOWL:Topic ;
+      project:${topicId}	a	bcfOWL:Topic ;
         bcfOWL:hasGuid "${topicId}"^^xsd:string ;
-        bcfOWL:hasProject inst:${projectId} ;
-        bcfOWL:hasCreationAuthor inst:${author} ;
+        bcfOWL:hasProject project:${projectId} ;
+        bcfOWL:hasCreationAuthor project:${author} ;
         bcfOWL:hasCreationDay "${timestamp}"^^xsd:dateTime ;\n` +
       sparqlConverter.toTopicSPARQL(req) +
       `} WHERE {
         ?s ?p ?o
-        FILTER NOT EXISTS { inst:${topicId} ?p ?o} 
+        FILTER NOT EXISTS { project:${topicId} ?p ?o} 
         }
       `
   );
@@ -159,6 +162,7 @@ exports.put_topic = (req, res, next) => {
   const topicId = req.params.topicId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   var author = "JaneDoe";
 
@@ -169,7 +173,7 @@ exports.put_topic = (req, res, next) => {
     "update",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-    PREFIX inst: <http://example.org#>
+    PREFIX project: <${process.env.BCF_URL + projectId}#>
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     
     DELETE {
@@ -178,7 +182,7 @@ exports.put_topic = (req, res, next) => {
       ${sparqlConverter.toTopicSPARQLUpdate(req)}
     }
     INSERT {
-      ?s  bcfOWL:hasModifiedAuthor inst:${author};
+      ?s  bcfOWL:hasModifiedAuthor project:${author};
           bcfOWL:hasModifiedDate "${timestamp}"^^xsd:datetime;
           ${sparqlConverter.toTopicSPARQL(req)} 
     }
