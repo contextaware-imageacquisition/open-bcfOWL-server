@@ -1,4 +1,5 @@
 const fetch = require("node-fetch");
+const FormData = require("form-data");
 const sparqlConverter = require("./Utilities/SparqlJsonConverter");
 const uuid = require("uuid");
 const fuseki = require("./Utilities/FusekiUtilities");
@@ -562,9 +563,6 @@ exports.post_viewpoint = (req, res, next) => {
   console.log("Test");
   const projectId = req.params.projectId;
   const topicId = req.params.topicId;
-  var myHeaders = new fetch.Headers();
-  myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
-  myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   if (req.body.guid) {
     viewpointId = req.body.guid;
@@ -572,45 +570,81 @@ exports.post_viewpoint = (req, res, next) => {
     viewpointId = uuid.v4();
   }
 
-  //TODO: Add Snapshot
-  var urlencoded = new URLSearchParams();
-  urlencoded.append(
-    "update",
-    `
-    PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-    PREFIX project: <${process.env.BCF_URL + projectId}#>
-    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-    PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-    
-    INSERT {
-      project:${viewpointId} a bcfOWL:Viewpoint ;
-        bcfOWL:hasGuid "${viewpointId}"^^xsd:string ;
-        bcfOWL:hasTopic project:${topicId} ;
-        bcfOWL:hasProject project:${projectId} ;\n` +
-      sparqlConverter.toViewpointSPARQL(req) +
-      `} WHERE {
-        ?s ?p ?o
-        FILTER NOT EXISTS { project:${viewpointId} ?p ?o} 
-        }
-      `
+  var file64 = req.body.snapshot.snapshot_data;
+  var decodedFile = new Buffer.from(file64, "base64");
+
+  var formdata = new FormData();
+  formdata.append(
+    "fileStream",
+    decodedFile,
+    `${viewpointId}.${req.body.snapshot.snapshot_type}`
   );
 
-  console.log(urlencoded);
+  var fileHeader = new fetch.Headers();
+  fileHeader.append("Authorization", "Basic " + fuseki.fileauth());
 
   var requestOptions = {
     method: "POST",
-    headers: myHeaders,
-    body: urlencoded,
+    headers: fileHeader,
+    body: formdata,
     redirect: "follow",
   };
 
-  fetch(process.env.FUSEKI_URL + projectId, requestOptions)
+  const fileUrl =
+    process.env.FILESERVER_URL +
+    `${projectId}/${viewpointId}.${req.body.snapshot.snapshot_type}`;
+
+  fetch(fileUrl, requestOptions)
+    .then((response) => response)
     .then((result) => {
-      console.log(result);
-      //TODO: create response from request body and generated values and return them
-      res.status(201).json(result);
+      //TODO: Change status request to 201
+      //TODO: Write Utility for checking codes!
+      if (result.status == 201) {
+        var myHeaders = new fetch.Headers();
+        myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+        myHeaders.append("Authorization", "Basic " + fuseki.auth());
+
+        var urlencoded = new URLSearchParams();
+        urlencoded.append(
+          "update",
+          `
+          PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+          PREFIX project: <${process.env.BCF_URL + projectId}#>
+          PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+          PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+          
+          INSERT {
+            project:${viewpointId} a bcfOWL:Viewpoint ;
+              bcfOWL:hasGuid "${viewpointId}"^^xsd:string ;
+              bcfOWL:hasTopic project:${topicId} ;
+              bcfOWL:hasSnapshot "${fileUrl}"^^xsd:anyURI ;
+              bcfOWL:hasProject project:${projectId} ;\n` +
+            sparqlConverter.toViewpointSPARQL(req) +
+            `} WHERE {
+              ?s ?p ?o
+              FILTER NOT EXISTS { project:${viewpointId} ?p ?o} 
+          }
+      `
+        );
+        console.log(urlencoded);
+
+        var requestOptions = {
+          method: "POST",
+          headers: myHeaders,
+          body: urlencoded,
+          redirect: "follow",
+        };
+
+        fetch(process.env.FUSEKI_URL + projectId, requestOptions)
+          .then((result) => {
+            console.log(result);
+            //TODO: create response from request body and generated values and return them
+            res.status(201).json(result);
+          })
+          .catch((error) => {
+            console.log("error", error);
+          });
+      }
     })
-    .catch((error) => {
-      console.log("error", error);
-    });
+    .catch((error) => console.log("error", error));
 };

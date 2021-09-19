@@ -27,9 +27,9 @@ exports.get_projects = (req, res, next) => {
         datasetPaths.push(name);
       }
 
-      var myHeaders = new fetch.Headers();
-      myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
-      myHeaders.append("Authorization", "Basic " + fuseki.auth());
+      // var myHeaders = new fetch.Headers();
+      // myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+      // myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
       var services = "";
 
@@ -60,6 +60,8 @@ exports.get_projects = (req, res, next) => {
         }
       }
 
+      console.log(services);
+
       var urlencoded = new URLSearchParams();
       urlencoded.append(
         "query",
@@ -72,16 +74,23 @@ exports.get_projects = (req, res, next) => {
         }`
       );
 
+      console.log(urlencoded);
+
+      var newHeaders = new fetch.Headers();
+      newHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+      newHeaders.append("Authorization", "Basic " + fuseki.auth());
+
       var requestOptions = {
         method: "POST",
-        headers: myHeaders,
+        headers: newHeaders,
         body: urlencoded,
         redirect: "follow",
       };
-
-      fetch(process.env.FUSEKI_URL + datasetPaths[0].slice(1), requestOptions)
-        .then((response) => response.json())
+      console.log(process.env.FUSEKI_URL + datasetPaths[0].slice(1));
+      fetch(process.env.FUSEKI_URL + datasetPaths[1].slice(1), requestOptions)
+        .then((response) => response)
         .then((result) => {
+          console.log(result);
           var bcfMap = {};
           var bcfReturn = [];
           for (value in result.results.bindings) {

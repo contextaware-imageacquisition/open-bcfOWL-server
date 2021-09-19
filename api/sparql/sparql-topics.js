@@ -14,10 +14,10 @@ exports.get_all_topics = (req, res, next) => {
     "query",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-    \nSELECT ?s ?p ?o
-    \nWHERE {?s a bcfOWL:Topic ;
-      \n?p ?o .
-      \n}`
+    SELECT ?s ?p ?o
+    WHERE {?s a bcfOWL:Topic ;
+      ?p ?o .
+      }`
   );
 
   var requestOptions = {
@@ -26,6 +26,8 @@ exports.get_all_topics = (req, res, next) => {
     body: urlencoded,
     redirect: "follow",
   };
+
+  console.log(urlencoded);
 
   fetch(process.env.FUSEKI_URL + projectId, requestOptions)
     .then((response) => response.json())

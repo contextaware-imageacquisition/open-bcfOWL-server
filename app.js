@@ -12,7 +12,17 @@ const swaggerUi = require("swagger-ui-express"),
 
 // BCF implementation
 
-const sparqlRoutes = require("./api/sparql/sparql-routes");
+mongoose.connect(
+  process.env.MONGO_ATLAS_URL +
+    process.env.MONGO_ATLAS_MAIN_SERVER +
+    "?retryWrites=true&w=majority",
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
+);
+
+const sparqlRoutes = require("./api/routes");
 
 app.use(morgan("dev"));
 //app.use("/uploads", express.static("uploads"))

@@ -105,6 +105,67 @@ function toTopicJson(binding) {
   return convertedValue;
 }
 
+function toDocumentJson(binding) {
+  var convertedValue = {};
+  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasGuid") {
+    convertedValue["guid"] = binding.o.value;
+  } else if (
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasFilename"
+  ) {
+    convertedValue["filename"] = binding.o.value;
+  }
+
+  return convertedValue;
+}
+
+function toSpatialJson(binding) {
+  var convertedValue = {};
+  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasAlignment") {
+    convertedValue["alignment"] = binding.o.value;
+  } else if (
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasLocation"
+  ) {
+    var value = binding.o.value;
+    value = value.replace("POINT Z(", "");
+    value = value.replace(")", "");
+    var vectorArr = value.split(" ");
+    var vector = {
+      x: vectorArr[0] * 1,
+      y: vectorArr[1] * 1,
+      z: vectorArr[2] * 1,
+    };
+    convertedValue["location"] = vector;
+  } else if (
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasRotation"
+  ) {
+    var value = binding.o.value;
+    value = value.replace("POINT Z(", "");
+    value = value.replace(")", "");
+    var vectorArr = value.split(" ");
+    var vector = {
+      x: vectorArr[0] * 1,
+      y: vectorArr[1] * 1,
+      z: vectorArr[2] * 1,
+    };
+    convertedValue["rotation"] = vector;
+  } else if (
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasScale"
+  ) {
+    var value = binding.o.value;
+    value = value.replace("POINT Z(", "");
+    value = value.replace(")", "");
+    var vectorArr = value.split(" ");
+    var vector = {
+      x: vectorArr[0] * 1,
+      y: vectorArr[1] * 1,
+      z: vectorArr[2] * 1,
+    };
+    convertedValue["scale"] = vector;
+  }
+
+  return convertedValue;
+}
+
 function toProjectJson(binding) {
   var convertedValue = {};
   if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasGuid") {
@@ -655,4 +716,6 @@ module.exports = {
   toExtensionJson,
   toProjectJson,
   toExtensionSPARQL,
+  toDocumentJson,
+  toSpatialJson,
 };
