@@ -1,4 +1,5 @@
 const fetch = require("node-fetch");
+const jwt = require("jsonwebtoken");
 
 exports.sparql_query_endpoint = (req, res, next) => {
   console.log(req.body.query);

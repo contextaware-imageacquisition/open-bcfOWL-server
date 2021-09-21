@@ -1,12 +1,12 @@
 const fetch = require("node-fetch");
 const FormData = require("form-data");
-const sparqlConverter = require("./Utilities/SparqlJsonConverter");
+const sparqlConverter = require("../Utilities/SparqlJsonConverter");
 const uuid = require("uuid");
-const fuseki = require("./Utilities/FusekiUtilities");
+const fuseki = require("../Utilities/FusekiUtilities");
+const jwt = require("jsonwebtoken");
 
 exports.get_documents = (req, res, next) => {
   const projectId = req.params.projectId;
-  const documentId = req.params.documentId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
   myHeaders.append("Authorization", "Basic " + fuseki.auth());
@@ -53,7 +53,7 @@ exports.get_documents = (req, res, next) => {
       res.status(200).json(bcfReturn);
     })
     .catch((error) => {
-      console.log("error", error);
+      res.status(400).json(error);
     });
 };
 
@@ -95,8 +95,6 @@ exports.get_document = (req, res, next) => {
       var documentSplit = documentUrl.split("/");
       var documentName = documentSplit[documentSplit.length - 1];
 
-      console.log(documentName);
-
       var fileHeader = new fetch.Headers();
       fileHeader.append("Authorization", "Basic " + fuseki.fileauth());
 
@@ -106,24 +104,23 @@ exports.get_document = (req, res, next) => {
         redirect: "follow",
       };
 
-      console.log(process.env.FILESERVER_URL + `${projectId}/${documentName}`);
-
       fetch(
         process.env.FILESERVER_URL + `${projectId}/${documentName}`,
         requestOptions
       )
         .then((response) => response.arrayBuffer())
         .then((result) => {
-          console.log(result);
           var data = result;
           var buff = new Buffer.from(data, "");
-          console.log();
+
           res.status(200).send(buff);
         })
-        .catch((error) => console.log("error", error));
+        .catch((error) => {
+          res.status(400).json(error);
+        });
     })
     .catch((error) => {
-      console.log("error", error);
+      res.status(400).json(error);
     });
 };
 
@@ -204,17 +201,23 @@ exports.post_document = (req, res, next) => {
 
           fetch(process.env.FUSEKI_URL + projectId, requestOptions)
             .then((result) => {
-              res.status(201).json({
-                guid: documentId,
-                filename: filename,
-              });
+              if (result.status == 200) {
+                res.status(201).json({
+                  guid: documentId,
+                  filename: filename,
+                });
+              } else {
+                res.status(400).json("error");
+              }
             })
             .catch((error) => {
-              console.log("error", error);
+              res.status(400).json(error);
             });
         }
       })
-      .catch((error) => console.log("error", error));
+      .catch((error) => {
+        res.status(400).json(error);
+      });
   });
 };
 
@@ -260,7 +263,7 @@ exports.get_spatial = (req, res, next) => {
       res.status(200).json(bcfMap);
     })
     .catch((error) => {
-      console.log("error", error);
+      res.status(400).json(error);
     });
 };
 
@@ -310,8 +313,164 @@ exports.post_spatial = (req, res, next) => {
   `
   );
 
-  console.log(urlencoded);
+  var requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: urlencoded,
+    redirect: "follow",
+  };
 
+  fetch(process.env.FUSEKI_URL + projectId, requestOptions)
+    .then((result) => {
+      if (result.status == 200) {
+        res.status(200).json({
+          documentId: documentId,
+          alignment: "center",
+          location: req.body.location,
+          rotation: req.body.rotation,
+          scale: req.body.scale,
+        });
+      } else {
+        res.status(400).json("error");
+      }
+    })
+    .catch((error) => {
+      res.status(400).json(error);
+    });
+};
+
+// Document references
+
+exports.get_documentRefs = (req, res, next) => {
+  const topicId = req.params.topicId;
+  const projectId = req.params.projectId;
+  var myHeaders = new fetch.Headers();
+  myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
+
+  var urlencoded = new URLSearchParams();
+  urlencoded.append(
+    "query",
+    `
+            PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+        PREFIX project: <${process.env.BCF_URL + projectId}#>
+        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+        PREFIX users: <${process.env.BCF_URL}users#>
+
+    SELECT ?s ?p ?o
+    WHERE {
+      project:${topicId} bcfOWL:hasDocumentReference ?s.
+
+      ?s a bcfOWL:DocumentReference;
+         ?p ?o.
+    }
+    `
+  );
+
+  var requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: urlencoded,
+    redirect: "follow",
+  };
+
+  fetch(process.env.FUSEKI_URL + projectId, requestOptions)
+    .then((response) => response.json())
+    .then((result) => {
+      var documentRefsSorted = sparqlConverter.toDocumentRefJson(result);
+      var documentRefs = [];
+      for (ref in documentRefsSorted) {
+        documentRefs.push(documentRefsSorted[ref]);
+      }
+      res.status(200).json(documentRefs);
+    })
+    .catch((error) => {
+      res.status(400).json(error);
+    });
+};
+
+exports.get_all_documentRefs = (req, res, next) => {
+  const projectId = req.params.projectId;
+  var myHeaders = new fetch.Headers();
+  myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
+
+  var urlencoded = new URLSearchParams();
+  urlencoded.append(
+    "query",
+    `
+    PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+    PREFIX project: <${process.env.BCF_URL + projectId}#>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX users: <${process.env.BCF_URL}users#>
+
+    SELECT ?s ?p ?o
+    WHERE {
+
+      ?s a bcfOWL:DocumentReference;
+         ?p ?o.
+    }
+    `
+  );
+
+  var requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: urlencoded,
+    redirect: "follow",
+  };
+
+  fetch(process.env.FUSEKI_URL + projectId, requestOptions)
+    .then((response) => response.json())
+    .then((result) => {
+      var documentRefsSorted = sparqlConverter.toDocumentRefJson(result);
+      var documentRefs = [];
+      for (ref in documentRefsSorted) {
+        documentRefs.push(documentRefsSorted[ref]);
+      }
+      res.status(200).json(documentRefs);
+    })
+    .catch((error) => {
+      res.status(400).json(error);
+    });
+};
+
+exports.post_documentRefs = (req, res, next) => {
+  const projectId = req.params.projectId;
+  const documentRefId = uuid.v4();
+  const topicId = req.params.topicId;
+
+  var myHeaders = new fetch.Headers();
+  myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
+
+  if (req.body.document_guid) {
+    var documentRef = `bcfOWL:hasDocument project:${req.body.document_guid}`;
+  } else {
+    var documentRef = `bcfOWL:hasDocument <${req.body.url}>`;
+  }
+
+  var urlencoded = new URLSearchParams();
+  urlencoded.append(
+    "update",
+    `
+        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+        PREFIX project: <${process.env.BCF_URL + projectId}#>
+        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+        PREFIX users: <${process.env.BCF_URL}users#>
+
+        INSERT DATA{
+          project:${topicId} bcfOWL:hasDocumentReference project:${documentRefId}.
+
+          project:${documentRefId} a bcfOWL:DocumentReference ;
+            bcfOWL:hasGuid "${documentRefId}"^^xsd:string ;
+            bcfOWL:hasDescription "${req.body.description}"^^xsd:string ;
+            ${documentRef}.
+        }
+            `
+  );
+
+  console.log(urlencoded);
   var requestOptions = {
     method: "POST",
     headers: myHeaders,
@@ -322,19 +481,16 @@ exports.post_spatial = (req, res, next) => {
   fetch(process.env.FUSEKI_URL + projectId, requestOptions)
     .then((result) => {
       console.log(result);
-      if (result.status == 200) {
-        res.status(200).json({
-          documentId: documentId,
-          alignment: "center",
-          location: req.body.location,
-          rotation: req.body.rotation,
-          scale: req.body.scale,
-        });
-      } else {
-        res.status(401).json("error");
-      }
+      res.status(201).json({
+        guid: documentRefId,
+        description: req.body.description,
+        document_guid: req.body.document_guid,
+        url: "",
+      });
     })
     .catch((error) => {
       console.log("error", error);
     });
 };
+
+exports.put_documentRefs = (req, res, next) => {};

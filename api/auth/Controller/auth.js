@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const uuid = require("uuid");
+const fetch = require("node-fetch");
+const fuseki = require("../../Utilities/FusekiUtilities");
 
 const User = require("../Models/user");
 const { hash } = require("bcrypt");
@@ -43,12 +46,58 @@ exports.auth_signup = (req, res, next) => {
             user
               .save()
               .then((result) => {
-                console.log(result);
-                res.status(201).json({
-                  id: req.body.id,
-                  name: req.body.name,
-                  role: req.body.role,
-                });
+                var myHeaders = new fetch.Headers();
+                myHeaders.append(
+                  "Content-Type",
+                  "application/x-www-form-urlencoded"
+                );
+                myHeaders.append("Authorization", "Basic " + fuseki.auth());
+
+                var userId = uuid.v4();
+
+                var urlencoded = new URLSearchParams();
+                urlencoded.append(
+                  "update",
+                  `
+                  PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+                  PREFIX users: <http://my-bcf-url/users#>
+
+                  INSERT {
+                  users:${req.body.name.replace(" ", "_")}_${userId}
+                      a       foaf:Person ;
+                      foaf:mbox <mailto:${req.body.id}> ;
+                      foaf:name "${req.body.name}" .
+                  } WHERE {
+                    ?s ?p ?o
+                    FILTER NOT EXISTS { ?s foaf:mbox <mailto:${req.body.id}>} 
+                  }
+                    `
+                );
+                console.log(urlencoded);
+
+                var requestOptions = {
+                  method: "POST",
+                  headers: myHeaders,
+                  body: urlencoded,
+                  redirect: "follow",
+                };
+
+                fetch(process.env.FUSEKI_URL + "users", requestOptions)
+                  .then((result) => {
+                    console.log(result);
+                    if (result.status == 200) {
+                      res.status(201).json({
+                        id: req.body.id,
+                        name: req.body.name,
+                        role: req.body.role,
+                      });
+                    } else {
+                      res.status(400).json("error");
+                    }
+                  })
+                  .catch((error) => {
+                    res.status(400).json(error);
+                  });
               })
               .catch((err) => {
                 console.log(err);
@@ -123,10 +172,12 @@ exports.auth_login = (req, res, next) => {
             {
               id: user[0].id,
               userId: user[0]._id,
+              name: user[0].name,
+              role: user[0].role,
             },
             process.env.JWT_KEY,
             {
-              expiresIn: "7d",
+              expiresIn: "1d",
             }
           );
           return res.status(200).json({

@@ -5,52 +5,52 @@ const checkAdmin = require("./auth/Middleware/check_admin");
 const checkAuth = require("./auth/Middleware/check-auth");
 
 //const { post } = require('../Models/extensions');
-const TopicsController = require("./sparql/sparql-topics");
-const SparqlEndpoint = require("./sparql/sparql-endpoint");
-const CommentController = require("./sparql/sparql-comments");
-const ViewpointController = require("./sparql/sparql-viewpoints");
-const ExtensionsController = require("./sparql/sparql-extension");
-const ProjectController = require("./sparql/sparql-projects");
-const DocumentsController = require("./sparql/sparql-documents");
+const TopicsController = require("./bcf/topicsController");
+const SparqlEndpoint = require("./bcf/endpointController");
+const CommentController = require("./bcf/commentsController");
+const ViewpointController = require("./bcf/viewpointsController");
+const ExtensionsController = require("./bcf/extensionController");
+const ProjectController = require("./bcf/projectsController");
+const DocumentsController = require("./bcf/documentsController");
 const AuthController = require("./auth/Controller/auth.js");
 const UserController = require("./auth/Controller/user");
 
 // Auth routes... temporary
-router.get("/current-user", UserController.current_user);
-router.get("/auth", AuthController.auth_get);
-router.post("/auth/login", AuthController.auth_login);
-router.post("/auth/signup", checkAdmin, AuthController.auth_signup);
+router.get("/:version/current-user", UserController.current_user);
+router.get("/:version/auth", AuthController.auth_get);
+router.post("/:version/auth/login", AuthController.auth_login);
+router.post("/:version/auth/signup", checkAdmin, AuthController.auth_signup);
 
 // Query main server with sparql
-router.post("/query", checkAuth, SparqlEndpoint.sparql_query_endpoint);
+router.post("/:version/query", checkAuth, SparqlEndpoint.sparql_query_endpoint);
 
 // Documents
 router.get(
-  "/projects/:projectId/documents",
+  "/:version/projects/:projectId/documents",
   checkAuth,
   DocumentsController.get_documents
 );
 
 router.get(
-  "/projects/:projectId/documents/:documentId",
+  "/:version/projects/:projectId/documents/:documentId",
   checkAuth,
   DocumentsController.get_document
 );
 
 router.post(
-  "/projects/:projectId/documents",
+  "/:version/projects/:projectId/documents",
   checkAuth,
   DocumentsController.post_document
 );
 
-router.post(
-  "/projects/:projectId/documents/:documentId/spatial_representation",
+router.put(
+  "/:version/projects/:projectId/documents/:documentId/spatial_representation",
   checkAuth,
   DocumentsController.post_spatial
 );
 
 router.get(
-  "/projects/:projectId/documents/:documentId/spatial_representation",
+  "/:version/projects/:projectId/documents/:documentId/spatial_representation",
   checkAuth,
   DocumentsController.get_spatial
 );
@@ -60,101 +60,127 @@ router.get(
 
 // Projects
 
-router.get("/projects", checkAuth, ProjectController.get_projects);
-router.post("/projects", checkAuth, ProjectController.post_project);
+router.get("/:version/projects", checkAuth, ProjectController.get_projects);
+router.post("/:version/projects", checkAuth, ProjectController.post_project);
 
 // Extensions
 
 router.get(
-  "/projects/:projectId/extensions",
+  "/:version/projects/:projectId/extensions",
   checkAuth,
   ExtensionsController.get_extensions
 );
 router.post(
-  "/projects/:projectId/extensions",
+  "/:version/projects/:projectId/extensions",
   checkAuth,
   ExtensionsController.post_extensions
 );
 
 // Topics
 router.get(
-  "/projects/:projectId/topics",
+  "/:version/projects/:projectId/topics",
   checkAuth,
   TopicsController.get_all_topics
 );
 
 router.get(
-  "/projects/:projectId/topics/:topicId",
+  "/:version/projects/:projectId/topics/:topicId",
   checkAuth,
   TopicsController.get_topic
 );
 
 router.post(
-  "/projects/:projectId/topics",
+  "/:version/projects/:projectId/topics",
   checkAuth,
   TopicsController.post_topic
 );
 
 router.put(
-  "/projects/:projectId/topics/:topicId",
+  "/:version/projects/:projectId/topics/:topicId",
   checkAuth,
   TopicsController.put_topic
 );
 
+// Document References
+
+router.post(
+  "/:version/projects/:projectId/topics/:topicId/document_references",
+  checkAuth,
+  DocumentsController.post_documentRefs
+);
+
+router.get(
+  "/:version/projects/:projectId/topics/:topicId/document_references",
+  checkAuth,
+  DocumentsController.get_documentRefs
+);
+
+router.get(
+  "/:version/projects/:projectId/document_references",
+  checkAuth,
+  DocumentsController.get_all_documentRefs
+);
+
 // Comments
 router.get(
-  "/projects/:projectId/comments",
+  "/:version/projects/:projectId/comments",
   checkAuth,
   CommentController.get_all_comments
 );
 
 router.get(
-  "/projects/:projectId/topics/:topicId/comments",
+  "/:version/projects/:projectId/topics/:topicId/comments",
   checkAuth,
   CommentController.get_all_topic_comments
 );
 
 router.get(
-  "/projects/:projectId/topics/:topicId/comments/:commentId",
+  "/:version/projects/:projectId/topics/:topicId/comments/:commentId",
   checkAuth,
   CommentController.get_comment
 );
 
 router.post(
-  "/projects/:projectId/topics/:topicId/comments/",
+  "/:version/projects/:projectId/topics/:topicId/comments/",
   checkAuth,
   CommentController.post_comment
 );
 
 router.put(
-  "/projects/:projectId/topics/:topicId/comments/:commentId",
+  "/:version/projects/:projectId/topics/:topicId/comments/:commentId",
   checkAuth,
   CommentController.put_comment
 );
 
 // Viewpoints
 router.get(
-  "/projects/:projectId/viewpoints",
+  "/:version/projects/:projectId/viewpoints",
   checkAuth,
   ViewpointController.get_all_viewpoints
 );
 
 router.get(
-  "/projects/:projectId/topics/:topicId/viewpoints",
+  "/:version/projects/:projectId/topics/:topicId/viewpoints",
   checkAuth,
   ViewpointController.get_all_topic_viewpoints
 );
 
 router.get(
-  "/projects/:projectId/topics/:topicId/viewpoints/:viewpointId",
+  "/:version/projects/:projectId/topics/:topicId/viewpoints/:viewpointId",
   checkAuth,
   ViewpointController.get_viewpoint
 );
 
 router.post(
-  "/projects/:projectId/topics/:topicId/viewpoints/",
+  "/:version/projects/:projectId/topics/:topicId/viewpoints/",
   checkAuth,
   ViewpointController.post_viewpoint
+);
+
+router.get(
+  "/:version/projects/:projectId/topics/:topicId/viewpoints/:viewpointId/snapshot",
+  checkAuth,
+  ViewpointController.get_snapshot
 );
 
 module.exports = router;

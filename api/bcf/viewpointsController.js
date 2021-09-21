@@ -1,8 +1,9 @@
 const fetch = require("node-fetch");
 const FormData = require("form-data");
-const sparqlConverter = require("./Utilities/SparqlJsonConverter");
+const sparqlConverter = require("../Utilities/SparqlJsonConverter");
 const uuid = require("uuid");
-const fuseki = require("./Utilities/FusekiUtilities");
+const fuseki = require("../Utilities/FusekiUtilities");
+const jwt = require("jsonwebtoken");
 
 exports.get_all_viewpoints = (req, res, next) => {
   const projectId = req.params.projectId;
@@ -369,13 +370,18 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
     });
 };
 
-exports.get_viewpoint = (req, res, next) => {
+exports.get_viewpoint = (req, res, created) => {
   const projectId = req.params.projectId;
   const topicId = req.params.topicId;
-  const viewpointId = req.params.viewpointId;
+  var viewpointId = req.params.viewpointId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
   myHeaders.append("Authorization", "Basic " + fuseki.auth());
+
+  if (created.bCreated == true) {
+    var bCreated = created.bCreated;
+    viewpointId = created.viewpointId;
+  }
 
   var urlencoded = new URLSearchParams();
   urlencoded.append(
@@ -488,7 +494,6 @@ exports.get_viewpoint = (req, res, next) => {
           bcfMap[binding.s.value] = sparqlConverter.toViewpointJson(binding);
         }
       }
-      console.log(bcfMap);
       for (object in bcfMap) {
         var tempComponents = {};
         var tempVisibility = {};
@@ -511,11 +516,9 @@ exports.get_viewpoint = (req, res, next) => {
           }
 
           if (bcfMap[object].selection) {
-            console.log(bcfMap[object].selection);
             selectionArr = bcfMap[object].selection;
             tempSelectionArr = [];
             for (selection in selectionArr) {
-              console.log(bcfMap[selectionArr[selection]]);
               tempSelectionArr.push(bcfMap[selectionArr[selection]]);
             }
             tempSelection = tempSelectionArr;
@@ -532,6 +535,7 @@ exports.get_viewpoint = (req, res, next) => {
 
           tempViewpoint["guid"] = viewpointValues.guid;
           tempViewpoint["topic_guid"] = viewpointValues.topic_guid;
+          tempViewpoint["snapshot_type"] = viewpointValues.snapshot_type;
 
           tempSetupHints["spaces_visible"] = viewpointValues.spaces_visible;
           tempSetupHints["space_boundaries_visible"] =
@@ -551,8 +555,11 @@ exports.get_viewpoint = (req, res, next) => {
           bcfReturn.push(tempViewpoint);
         }
       }
-      // console.log(bcfMap);
-      res.status(200).json(bcfReturn[0]);
+      if (bCreated == true) {
+        res.status(201).json(bcfReturn[0]);
+      } else {
+        res.status(200).json(bcfReturn[0]);
+      }
     })
     .catch((error) => {
       console.log("error", error);
@@ -626,6 +633,7 @@ exports.post_viewpoint = (req, res, next) => {
           }
       `
         );
+
         console.log(urlencoded);
 
         var requestOptions = {
@@ -637,9 +645,18 @@ exports.post_viewpoint = (req, res, next) => {
 
         fetch(process.env.FUSEKI_URL + projectId, requestOptions)
           .then((result) => {
-            console.log(result);
-            //TODO: create response from request body and generated values and return them
-            res.status(201).json(result);
+            this.get_viewpoint(req, res, {
+              bCreated: true,
+              viewpointId: viewpointId,
+            });
+            // res.status(201).json({
+            //   guid: viewpointId,
+            //   index: req.body.index,
+            //   perspective_camera: req.body.perspective_camera,
+            //   snapshot: {
+            //     snapshot_type: req.body.snapshot.snapshot_type,
+            //   },
+            // });
           })
           .catch((error) => {
             console.log("error", error);
@@ -647,4 +664,71 @@ exports.post_viewpoint = (req, res, next) => {
       }
     })
     .catch((error) => console.log("error", error));
+};
+
+exports.get_snapshot = (req, res, next) => {
+  const projectId = req.params.projectId;
+  const viewpointId = req.params.viewpointId;
+  var myHeaders = new fetch.Headers();
+  myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
+
+  var urlencoded = new URLSearchParams();
+  urlencoded.append(
+    "query",
+    `
+    PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+
+    SELECT ?o
+    WHERE {
+      ?s a bcfOWL:Viewpoint;
+         bcfOWL:hasGuid "${viewpointId}";
+         bcfOWL:hasSnapshot ?o
+    }
+    `
+  );
+
+  var requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: urlencoded,
+    redirect: "follow",
+  };
+
+  fetch(process.env.FUSEKI_URL + projectId, requestOptions)
+    .then((response) => response.json())
+    .then((result) => {
+      // since this request should always just return one document, we can choose the first result
+      var snapshotUrl = result.results.bindings[0].o.value;
+      // split the Url so we just get the name
+      var snapshotSplit = snapshotUrl.split("/");
+      var snapshotName = snapshotSplit[snapshotSplit.length - 1];
+
+      var fileHeader = new fetch.Headers();
+      fileHeader.append("Authorization", "Basic " + fuseki.fileauth());
+
+      var requestOptions = {
+        method: "GET",
+        headers: fileHeader,
+        redirect: "follow",
+      };
+
+      fetch(
+        process.env.FILESERVER_URL + `${projectId}/${snapshotName}`,
+        requestOptions
+      )
+        .then((response) => response.arrayBuffer())
+        .then((result) => {
+          var data = result;
+          var buff = new Buffer.from(data, "");
+
+          res.status(200).send(buff);
+        })
+        .catch((error) => {
+          res.status(400).json(error);
+        });
+    })
+    .catch((error) => {
+      res.status(400).json(error);
+    });
 };

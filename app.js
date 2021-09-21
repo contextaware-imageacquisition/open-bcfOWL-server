@@ -43,7 +43,7 @@ app.use((req, res, next) => {
 });
 
 // Routes which should handle requests
-app.use("/bcf/sparql", sparqlRoutes);
+app.use("/bcf/", sparqlRoutes);
 
 app.use("/", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 

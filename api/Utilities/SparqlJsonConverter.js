@@ -22,7 +22,7 @@ function setExtensionString(extension) {
   return string;
 }
 
-function toTopicJson(binding) {
+function toTopicJson(binding, users) {
   var convertedValue = {};
   if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasGuid") {
     convertedValue["guid"] = binding.o.value;
@@ -38,12 +38,12 @@ function toTopicJson(binding) {
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasCreationAuthor"
   ) {
     value = binding.o.value;
-    if (value.split("#").length > 0) {
-      var stringArray = value.split("#");
-    } else {
-      var stringArray = value.split("/");
-    }
-    convertedValue["creation_author"] = stringArray[stringArray.length - 1];
+    convertedValue["creation_author"] = users[value];
+  } else if (
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasModifiedAuthor"
+  ) {
+    value = binding.o.value;
+    convertedValue["modified_author"] = users[value];
   } else if (
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTopicStatus"
   ) {
@@ -58,12 +58,7 @@ function toTopicJson(binding) {
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasAssignedTo"
   ) {
     value = binding.o.value;
-    if (value.split("#").length > 0) {
-      var stringArray = value.split("#");
-    } else {
-      var stringArray = value.split("/");
-    }
-    convertedValue["assigned_to"] = stringArray[stringArray.length - 1];
+    convertedValue["assigned_to"] = users[value];
   } else if (
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTopicType"
   ) {
@@ -85,9 +80,13 @@ function toTopicJson(binding) {
     }
     convertedValue["labels"] = [stringArray[stringArray.length - 1]];
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasCreationDay"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasCreationDate"
   ) {
     convertedValue["creation_date"] = binding.o.value;
+  } else if (
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasModifiedDate"
+  ) {
+    convertedValue["modified_date"] = binding.o.value;
   } else if (
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasPriority"
   ) {
@@ -113,6 +112,60 @@ function toDocumentJson(binding) {
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasFilename"
   ) {
     convertedValue["filename"] = binding.o.value;
+  }
+
+  return convertedValue;
+}
+
+function toDocumentRefJson(result) {
+  var convertedValue = {};
+  bindings = result.results.bindings;
+
+  for (binding in bindings) {
+    var documentRefValues = {};
+    console.log(bindings[binding].p.value);
+    if (
+      bindings[binding].p.value ==
+      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasGuid"
+    ) {
+      if (convertedValue[bindings[binding].s.value.split("#")[1]]) {
+        documentRefValues =
+          convertedValue[bindings[binding].s.value.split("#")[1]];
+        documentRefValues["guid"] = bindings[binding].o.value;
+      } else {
+        documentRefValues["guid"] = bindings[binding].o.value;
+        convertedValue[bindings[binding].s.value.split("#")[1]] =
+          documentRefValues;
+      }
+    } else if (
+      bindings[binding].p.value ==
+      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasDescription"
+    ) {
+      if (convertedValue[bindings[binding].s.value.split("#")[1]]) {
+        documentRefValues =
+          convertedValue[bindings[binding].s.value.split("#")[1]];
+        documentRefValues["description"] = bindings[binding].o.value;
+      } else {
+        documentRefValues["description"] = bindings[binding].o.value;
+        convertedValue[bindings[binding].s.value.split("#")[1]] =
+          documentRefValues;
+      }
+    } else if (
+      bindings[binding].p.value ==
+      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasDocument"
+    ) {
+      if (convertedValue[bindings[binding].s.value.split("#")[1]]) {
+        documentRefValues =
+          convertedValue[bindings[binding].s.value.split("#")[1]];
+        documentRefValues["document_guid"] =
+          bindings[binding].o.value.split("#")[1];
+      } else {
+        documentRefValues["document_guid"] =
+          bindings[binding].o.value.split("#")[1];
+        convertedValue[bindings[binding].s.value.split("#")[1]] =
+          documentRefValues;
+      }
+    }
   }
 
   return convertedValue;
@@ -179,7 +232,7 @@ function toProjectJson(binding) {
   return convertedValue;
 }
 
-function toCommentJson(binding) {
+function toCommentJson(binding, users) {
   var convertedValue = {};
   if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasGuid") {
     convertedValue["guid"] = binding.o.value;
@@ -201,22 +254,12 @@ function toCommentJson(binding) {
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasAuthor"
   ) {
     value = binding.o.value;
-    if (value.split("#").length > 0) {
-      var stringArray = value.split("#");
-    } else {
-      var stringArray = value.split("/");
-    }
-    convertedValue["author"] = stringArray[stringArray.length - 1];
+    convertedValue["author"] = users[value];
   } else if (
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasModifiedAuthor"
   ) {
     value = binding.o.value;
-    if (value.split("#").length > 0) {
-      var stringArray = value.split("#");
-    } else {
-      var stringArray = value.split("/");
-    }
-    convertedValue["modified_author"] = stringArray[stringArray.length - 1];
+    convertedValue["modified_author"] = users[value];
   } else if (
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasCommentDate"
   ) {
@@ -255,6 +298,11 @@ function toViewpointJson(binding) {
       var stringArray = value.split("/");
     }
     convertedValue["topic_guid"] = stringArray[stringArray.length - 1];
+  } else if (
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasSnapshotType"
+  ) {
+    value = binding.o.value;
+    convertedValue["snapshot_type"] = value;
   } else if (
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/SpacesVisible"
   ) {
@@ -353,14 +401,14 @@ function toViewpointJson(binding) {
   return convertedValue;
 }
 
-function toExtensionJson(response) {
+function toExtensionJson(response, users, version) {
   var bindings = response.results.bindings;
   var extensions = {};
   var types = [];
   var status = [];
   var labels = [];
   var priorities = [];
-  var users = [];
+  var userMails = [];
   var stages = [];
 
   for (binding in bindings) {
@@ -404,26 +452,31 @@ function toExtensionJson(response) {
       "http://lbd.arch.rwth-aachen.de/bcfOWL/hasUser"
     ) {
       value = bindings[binding].o.value;
-      users.push(splitURI(value));
+      userMails.push(users[value]);
     }
   }
   extensions["topic_type"] = types;
   extensions["topic_status"] = status;
   extensions["topic_label"] = labels;
   extensions["priority"] = priorities;
-  extensions["users"] = users;
+  if (version == "2.1") {
+    extensions["user_id_type"] = userMails;
+  } else {
+    extensions["users"] = userMails;
+  }
+
   extensions["stage"] = stages;
 
   return extensions;
 }
 
-function toExtensionSPARQL(request) {
+function toExtensionSPARQL(request, usersUris) {
   var query = "";
   const types = request.topic_type;
   const status = request.topic_status;
   const label = request.topic_label;
   const priority = request.priority;
-  const users = request.users;
+  const users = usersUris;
   const stages = request.stage;
 
   if (types) {
@@ -434,26 +487,30 @@ function toExtensionSPARQL(request) {
     query += `\nbcfOWL:hasTopicStatus` + setExtensionString(status);
   }
 
-  if (status) {
+  if (label) {
     query += `\nbcfOWL:hasLabels` + setExtensionString(label);
   }
 
-  if (status) {
+  if (priority) {
     query += `\nbcfOWL:hasPriority` + setExtensionString(priority);
   }
 
-  if (status) {
+  if (stages) {
     query += `\nbcfOWL:hasStage` + setExtensionString(stages);
   }
 
-  if (status) {
-    query += `\nbcfOWL:hasUser` + setExtensionString(users);
+  if (users) {
+    console.log(users);
+    for (user in users) {
+      query += `\nbcfOWL:hasUser`;
+      query += ` <${users[user]}>;`;
+    }
   }
 
   return query;
 }
 // Converts a BCF JSON Topic Request body to SPARQL Queries
-function toTopicSPARQL(request) {
+function toTopicSPARQL(request, assignedTo) {
   var sparqlString = "";
 
   if (request.body.title) {
@@ -472,8 +529,8 @@ function toTopicSPARQL(request) {
     sparqlString += `\n bcfOWL:hasPriority project:${request.body.priority} ;`;
   }
 
-  if (request.body.assigned_to) {
-    sparqlString += `\n bcfOWL:hasAssignedTo project:${request.body.assigned_to} ;`;
+  if (assignedTo.length > 0) {
+    sparqlString += `\n bcfOWL:hasAssignedTo <${assignedTo}> ;`;
   }
 
   if (request.body.stage) {
@@ -487,10 +544,26 @@ function toTopicSPARQL(request) {
     }
     labelString = labelString.slice(0, -2);
     console.log(labelString.toString());
-    sparqlString += ` \n  bcfOWL:hasLabels${labelString} .`;
+    if (labelString != "") {
+      sparqlString += ` \n  bcfOWL:hasLabels${labelString} .`;
+    }
   }
 
   return sparqlString;
+}
+
+function toUserSPARQL(user) {
+  var users = user;
+  var query = "";
+  for (user in users) {
+    if (user == 0) {
+      query += `{\n ?s foaf:mbox <mailto:${users[user]}>}`;
+    } else {
+      query += ` UNION {  
+        \n ?s foaf:mbox <mailto:${users[user]}>}`;
+    }
+  }
+  return query;
 }
 
 // Converts a BCF JSON Comment Request body to SPARQL Queries
@@ -521,16 +594,21 @@ function toViewpointSPARQL(request) {
 
   if (request.body.perspective_camera) {
     sparqlString += `\n bcfOWL:hasPerspectiveCamera project:${cameraId} ;`;
-
-    console.log("perspective ");
+    console.log(request.body.perspective_camera.field_of_view);
+    var aspectRatio;
+    if (request.body.perspective_camera.aspect_ratio) {
+      aspectRatio = request.body.perspective_camera.aspect_ratio;
+    } else {
+      aspectRatio = 0;
+    }
     perspective_camera += `
                     \n project:${cameraId}
                       a                          bcfOWL:PerspectiveCamera ;
-                      bcfOWL:hasAspectRatio      "${request.body.perspective_camera.aspect_ratio}"^^xsd:double ;
+                      bcfOWL:hasAspectRatio      "${request.body.perspective_camera.aspect_ratio}"^^xsd:float ;
                       bcfOWL:hasCameraDirection  "POINT Z(${request.body.perspective_camera.camera_direction.x} ${request.body.perspective_camera.camera_direction.y} ${request.body.perspective_camera.camera_direction.z})"^^geo:wktLiteral ;
                       bcfOWL:hasCameraUpVector   "POINT Z(${request.body.perspective_camera.camera_up_vector.x} ${request.body.perspective_camera.camera_up_vector.y} ${request.body.perspective_camera.camera_up_vector.z})"^^geo:wktLiteral ;
                       bcfOWL:hasCameraViewPoint  "POINT Z(${request.body.perspective_camera.camera_view_point.x} ${request.body.perspective_camera.camera_view_point.y} ${request.body.perspective_camera.camera_view_point.z})"^^geo:wktLiteral ;
-                      bcfOWL:hasFieldOfView      "${request.body.perspective_camera.field_of_view}"^^xsd:double .
+                      bcfOWL:hasFieldOfView      "${request.body.perspective_camera.field_of_view}"^^xsd:float .
     `;
   }
 
@@ -573,7 +651,12 @@ function toViewpointSPARQL(request) {
       selection += componentString;
     }
 
-    sparqlString += `\n bcfOWL:hasSelection ${selectionString.slice(0, -2)} ;`;
+    if (selectionString != "") {
+      sparqlString += `\n bcfOWL:hasSelection ${selectionString.slice(
+        0,
+        -2
+      )} ;`;
+    }
   }
 
   if (request.body.snapshot.snapshot_type) {
@@ -718,4 +801,6 @@ module.exports = {
   toExtensionSPARQL,
   toDocumentJson,
   toSpatialJson,
+  toUserSPARQL,
+  toDocumentRefJson,
 };
