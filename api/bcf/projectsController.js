@@ -65,19 +65,18 @@ exports.get_projects = (req, res, next) => {
             }
           }
 
-          // var myHeaders = new fetch.Headers();
-          // myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
-          // myHeaders.append("Authorization", "Basic " + fuseki.auth());
-
           var services = "";
+          var serviceURL = `${process.env.FUSEKI_URL.split("://")[0]}://${
+            process.env.FUSEKI_NAME
+          }:${process.env.FUSEKI_PW}@${
+            process.env.FUSEKI_URL.split("://")[1]
+          }/`;
 
           for (dataset in datasetPaths) {
             if (dataset == 0) {
               var query = `
           {
-            SERVICE <${
-              process.env.FUSEKI_URL + datasetPaths[dataset].slice(1)
-            }> {
+            SERVICE <${serviceURL + datasetPaths[dataset].slice(1)}> {
               ?s a bcfOWL:Project;
                 bcfOWL:hasUser <${author}> ;
                 ?p ?o .
@@ -88,9 +87,7 @@ exports.get_projects = (req, res, next) => {
             } else {
               var query = `
           UNION {
-            SERVICE <${
-              process.env.FUSEKI_URL + datasetPaths[dataset].slice(1)
-            }> {
+            SERVICE <${serviceURL + datasetPaths[dataset].slice(1)}> {
               ?s a bcfOWL:Project;
                 bcfOWL:hasUser <${author}> ;
                 ?p ?o .
@@ -104,13 +101,13 @@ exports.get_projects = (req, res, next) => {
           urlencoded.append(
             "query",
             `
-        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-        PREFIX project: <${process.env.BCF_URL + projectId}#>
-    
-        SELECT ?s ?p ?o
-        WHERE {
-          ${services}
-        }`
+            PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+            PREFIX project: <${process.env.BCF_URL + projectId}/>
+        
+            SELECT ?s ?p ?o
+            WHERE {
+              ${services}
+            }`
           );
 
           var newHeaders = new fetch.Headers();
@@ -130,7 +127,6 @@ exports.get_projects = (req, res, next) => {
           fetch(process.env.FUSEKI_URL + "users", requestOptions)
             .then((response) => response.json())
             .then((result) => {
-              console.log(result);
               var bcfMap = {};
               var bcfReturn = [];
               for (value in result.results.bindings) {
@@ -183,7 +179,7 @@ exports.post_project = (req, res, next) => {
 
   // creating a new dataset with the GUID
   fetch(
-    `http://semantic-collab.eu:8080/fuseki/$/datasets?dbType=tdb2&dbName=${projectId}`,
+    `${process.env.FUSEKI_URL}$/datasets?dbType=tdb2&dbName=${projectId}`,
     requestOptions
   )
     .then((response) => response)
@@ -226,7 +222,7 @@ exports.post_project = (req, res, next) => {
               "update",
               `
               PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-              PREFIX project: <${process.env.BCF_URL + projectId}#>
+              PREFIX project: <${process.env.BCF_URL + projectId}/>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
               PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
               

@@ -175,7 +175,7 @@ exports.post_document = (req, res, next) => {
             "update",
             `
           PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-          PREFIX project: <${process.env.BCF_URL + projectId}#>
+          PREFIX project: <${process.env.BCF_URL + projectId}/>
           PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
           PREFIX geo: <http://www.opengis.net/ont/geosparql#>
           
@@ -234,7 +234,7 @@ exports.get_spatial = (req, res, next) => {
     "query",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-    PREFIX project: <${process.env.BCF_URL + projectId}#>
+    PREFIX project: <${process.env.BCF_URL + projectId}/>
 
     SELECT ?s ?p ?o
     WHERE {
@@ -283,7 +283,7 @@ exports.post_spatial = (req, res, next) => {
     "update",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-    PREFIX project: <${process.env.BCF_URL + projectId}#>
+    PREFIX project: <${process.env.BCF_URL + projectId}/>
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     PREFIX geo: <http://www.opengis.net/ont/geosparql#>
     
@@ -353,7 +353,7 @@ exports.get_documentRefs = (req, res, next) => {
     "query",
     `
             PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-        PREFIX project: <${process.env.BCF_URL + projectId}#>
+        PREFIX project: <${process.env.BCF_URL + projectId}/>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         PREFIX users: <${process.env.BCF_URL}users#>
 
@@ -400,7 +400,7 @@ exports.get_all_documentRefs = (req, res, next) => {
     "query",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-    PREFIX project: <${process.env.BCF_URL + projectId}#>
+    PREFIX project: <${process.env.BCF_URL + projectId}/>
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     PREFIX users: <${process.env.BCF_URL}users#>
 
@@ -455,7 +455,7 @@ exports.post_documentRefs = (req, res, next) => {
     "update",
     `
         PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-        PREFIX project: <${process.env.BCF_URL + projectId}#>
+        PREFIX project: <${process.env.BCF_URL + projectId}/>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         PREFIX users: <${process.env.BCF_URL}users#>
 

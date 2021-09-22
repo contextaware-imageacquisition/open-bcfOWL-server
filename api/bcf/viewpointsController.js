@@ -15,40 +15,40 @@ exports.get_all_viewpoints = (req, res, next) => {
   urlencoded.append(
     "query",
     `
-    \nPREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/> 
-    \nPREFIX project: <${process.env.BCF_URL + projectId}#>
-    \nPREFIX geo: <http://www.opengis.net/ont/geosparql#>
+    PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/> 
+    PREFIX project: <${process.env.BCF_URL + projectId}/>
+    PREFIX geo: <http://www.opengis.net/ont/geosparql#>
     
-    \nSELECT DISTINCT ?s ?p ?o WHERE {
-        \n{
-        \nSELECT *
-        \nWHERE {
-            \n?s 	a 	bcfOWL:Viewpoint ;
-            \n?p	?o .
-        \n}
-          \n} UNION {
-        \nSELECT *
-          \nWHERE {
-            \n?x	bcfOWL:hasPerspectiveCamera ?s .
-              \n?s	a	bcfOWL:PerspectiveCamera ;
-              \n?p ?o .
-                  \n}
-        \n} UNION {
-        \nSELECT *
-          \nWHERE {
-            \n?x	bcfOWL:hasSelection ?s .
-              \n?s	a bcfOWL:Component;
-              \n?p ?o .
-                \n}
-        \n} UNION {
-        \nSELECT *
-          \nWHERE {
-            \n?x	bcfOWL:hasException ?s .
-              \n?s	a bcfOWL:Component;
-            \n?p ?o .
-                \n}
-        \n }
-     \n}
+    SELECT DISTINCT ?s ?p ?o WHERE {
+        {
+        SELECT *
+        WHERE {
+            ?s a bcfOWL:Viewpoint ;
+            ?p	?o .
+        }
+          } UNION {
+        SELECT *
+          WHERE {
+            ?x bcfOWL:hasPerspectiveCamera ?s .
+              ?s a bcfOWL:PerspectiveCamera ;
+              ?p ?o .
+                  }
+        } UNION {
+        SELECT *
+          WHERE {
+            ?x bcfOWL:hasSelection ?s .
+              ?s a bcfOWL:Component;
+              ?p ?o .
+                }
+        } UNION {
+        SELECT *
+          WHERE {
+            ?x bcfOWL:hasException ?s .
+              ?s a bcfOWL:Component;
+              ?p ?o .
+                }
+         }
+     }
         `
   );
 
@@ -197,7 +197,7 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
     "query",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/> 
-    PREFIX project: <${process.env.BCF_URL + projectId}#>
+    PREFIX project: <${process.env.BCF_URL + projectId}/>
     PREFIX geo: <http://www.opengis.net/ont/geosparql#>
     
     SELECT DISTINCT ?s ?p ?o WHERE {
@@ -388,7 +388,7 @@ exports.get_viewpoint = (req, res, created) => {
     "query",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/> 
-    PREFIX project: <${process.env.BCF_URL + projectId}#>
+    PREFIX project: <${process.env.BCF_URL + projectId}/>
     PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 
     SELECT DISTINCT ?s ?p ?o WHERE {
@@ -604,7 +604,6 @@ exports.post_viewpoint = (req, res, next) => {
   fetch(fileUrl, requestOptions)
     .then((response) => response)
     .then((result) => {
-      //TODO: Change status request to 201
       //TODO: Write Utility for checking codes!
       if (result.status == 201) {
         var myHeaders = new fetch.Headers();
@@ -616,7 +615,7 @@ exports.post_viewpoint = (req, res, next) => {
           "update",
           `
           PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-          PREFIX project: <${process.env.BCF_URL + projectId}#>
+          PREFIX project: <${process.env.BCF_URL + projectId}/>
           PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
           PREFIX geo: <http://www.opengis.net/ont/geosparql#>
           

@@ -2,7 +2,7 @@ const uuid = require("uuid");
 const guid = require("./GuidConverter");
 
 function splitURI(URI) {
-  if (URI.split("#").length > 0) {
+  if (URI.split("#").length > 1) {
     var stringArray = URI.split("#");
   } else {
     var stringArray = URI.split("/");
@@ -48,7 +48,7 @@ function toTopicJson(binding, users) {
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTopicStatus"
   ) {
     value = binding.o.value;
-    if (value.split("#").length > 0) {
+    if (value.split("#").length > 1) {
       var stringArray = value.split("#");
     } else {
       var stringArray = value.split("/");
@@ -63,7 +63,7 @@ function toTopicJson(binding, users) {
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTopicType"
   ) {
     value = binding.o.value;
-    if (value.split("#").length > 0) {
+    if (value.split("#").length > 1) {
       var stringArray = value.split("#");
     } else {
       var stringArray = value.split("/");
@@ -73,7 +73,7 @@ function toTopicJson(binding, users) {
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasLabels"
   ) {
     value = binding.o.value;
-    if (value.split("#").length > 0) {
+    if (value.split("#").length > 1) {
       var stringArray = value.split("#");
     } else {
       var stringArray = value.split("/");
@@ -92,7 +92,7 @@ function toTopicJson(binding, users) {
   ) {
     value = binding.o.value;
 
-    if (value.split("#").length > 0) {
+    if (value.split("#").length > 1) {
       var stringArray = value.split("#");
     } else {
       var stringArray = value.split("/");
@@ -128,42 +128,52 @@ function toDocumentRefJson(result) {
       bindings[binding].p.value ==
       "http://lbd.arch.rwth-aachen.de/bcfOWL/hasGuid"
     ) {
-      if (convertedValue[bindings[binding].s.value.split("#")[1]]) {
-        documentRefValues =
-          convertedValue[bindings[binding].s.value.split("#")[1]];
+      var guid =
+        bindings[binding].s.value.split("/")[
+          bindings[binding].s.value.split("/").length - 1
+        ];
+      if (convertedValue[guid]) {
+        documentRefValues = convertedValue[guid];
         documentRefValues["guid"] = bindings[binding].o.value;
       } else {
         documentRefValues["guid"] = bindings[binding].o.value;
-        convertedValue[bindings[binding].s.value.split("#")[1]] =
-          documentRefValues;
+        convertedValue[guid] = documentRefValues;
       }
     } else if (
       bindings[binding].p.value ==
       "http://lbd.arch.rwth-aachen.de/bcfOWL/hasDescription"
     ) {
-      if (convertedValue[bindings[binding].s.value.split("#")[1]]) {
-        documentRefValues =
-          convertedValue[bindings[binding].s.value.split("#")[1]];
+      var guid =
+        bindings[binding].s.value.split("/")[
+          bindings[binding].s.value.split("/").length - 1
+        ];
+      if (convertedValue[guid]) {
+        documentRefValues = convertedValue[guid];
         documentRefValues["description"] = bindings[binding].o.value;
       } else {
         documentRefValues["description"] = bindings[binding].o.value;
-        convertedValue[bindings[binding].s.value.split("#")[1]] =
-          documentRefValues;
+        convertedValue[guid] = documentRefValues;
       }
     } else if (
       bindings[binding].p.value ==
       "http://lbd.arch.rwth-aachen.de/bcfOWL/hasDocument"
     ) {
-      if (convertedValue[bindings[binding].s.value.split("#")[1]]) {
-        documentRefValues =
-          convertedValue[bindings[binding].s.value.split("#")[1]];
+      var guid =
+        bindings[binding].s.value.split("/")[
+          bindings[binding].s.value.split("/").length - 1
+        ];
+      if (convertedValue[guid]) {
+        documentRefValues = convertedValue[guid];
         documentRefValues["document_guid"] =
-          bindings[binding].o.value.split("#")[1];
+          bindings[binding].o.value.split("/")[
+            bindings[binding].o.value.split("/").length - 1
+          ];
       } else {
         documentRefValues["document_guid"] =
-          bindings[binding].o.value.split("#")[1];
-        convertedValue[bindings[binding].s.value.split("#")[1]] =
-          documentRefValues;
+          bindings[binding].o.value.split("/")[
+            bindings[binding].o.value.split("/").length - 1
+          ];
+        convertedValue[guid] = documentRefValues;
       }
     }
   }
@@ -240,7 +250,8 @@ function toCommentJson(binding, users) {
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTopic"
   ) {
     value = binding.o.value;
-    if (value.split("#").length > 0) {
+    console.log(value.split("#"));
+    if (value.split("#").length > 1) {
       var stringArray = value.split("#");
     } else {
       var stringArray = value.split("/");
@@ -273,7 +284,7 @@ function toCommentJson(binding, users) {
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasViewpoint"
   ) {
     value = binding.o.value;
-    if (value.split("#").length > 0) {
+    if (value.split("#").length > 1) {
       var stringArray = value.split("#");
     } else {
       var stringArray = value.split("/");
@@ -292,7 +303,7 @@ function toViewpointJson(binding) {
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTopic"
   ) {
     value = binding.o.value;
-    if (value.split("#").length > 0) {
+    if (value.split("#").length > 1) {
       var stringArray = value.split("#");
     } else {
       var stringArray = value.split("/");
@@ -383,7 +394,11 @@ function toViewpointJson(binding) {
     binding.p.value ==
     "http://lbd.arch.rwth-aachen.de/bcfOWL/hasOriginatingSystem"
   ) {
-    convertedValue["originating_system"] = binding.o.value;
+    console.log(
+      binding.o.value.split("/")[binding.o.value.split("/").length - 1]
+    );
+    convertedValue["originating_system"] =
+      binding.o.value.split("/")[binding.o.value.split("/").length - 1];
   } else if (
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasSelection"
   ) {

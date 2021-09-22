@@ -3,12 +3,9 @@ const morgan = require("morgan");
 const http = require("http");
 const mongoose = require("mongoose");
 const cors = require("cors");
-mongoose.set("useFindAndModify", false);
-mongoose.set("useCreateIndex", true);
+// mongoose.set("useFindAndModify", false);
+// mongoose.set("useCreateIndex", true);
 const app = express();
-
-const swaggerUi = require("swagger-ui-express"),
-  swaggerDocument = require("./bcfAPI.json");
 
 // BCF implementation
 
@@ -43,9 +40,7 @@ app.use((req, res, next) => {
 });
 
 // Routes which should handle requests
-app.use("/bcf/", sparqlRoutes);
-
-app.use("/", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use("/", sparqlRoutes);
 
 // Error Handlers
 
