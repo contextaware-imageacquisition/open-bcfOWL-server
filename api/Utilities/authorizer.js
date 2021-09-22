@@ -18,7 +18,7 @@ function authorizer(username, password, cb) {
 
   console.log("test");
 
-  fetch("http://localhost:3000/bcf/3.0/auth/login", requestOptions)
+  fetch(`${process.env.BCF_URL}bcf/3.0/auth/login`, requestOptions)
     .then((response) => response)
     .then((result) => {
       if (result.status == 200) {
