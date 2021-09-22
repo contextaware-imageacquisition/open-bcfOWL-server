@@ -31,7 +31,6 @@ exports.sparql_query_endpoint = (req, res, next) => {
 };
 
 exports.get_ressource = (req, res, next) => {
-  console.log(req);
   var projectId = req.params.projectId;
   var ressource = req.params.ressource;
 
@@ -69,7 +68,6 @@ exports.get_ressource = (req, res, next) => {
 };
 
 exports.get_project = (req, res, next) => {
-  console.log(req);
   var projectId = req.params.projectId;
   var ressource = req.params.ressource;
 

@@ -199,9 +199,9 @@ exports.post_topic = (req, res, next) => {
   var topicId;
 
   if (req.body.guid) {
-    topicId = req.body.guid;
+    var topicId = req.body.guid;
   } else {
-    topicId = uuid.v4();
+    var topicId = uuid.v4();
   }
   var authorName = jwt.decode(req.headers.authorization.split(" ")[1]).name;
   var authorMail = jwt.decode(req.headers.authorization.split(" ")[1]).id;

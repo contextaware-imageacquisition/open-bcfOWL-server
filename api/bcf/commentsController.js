@@ -300,9 +300,9 @@ exports.post_comment = (req, res, next) => {
   myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
   if (req.body.guid) {
-    commentId = req.body.guid;
+    var commentId = req.body.guid;
   } else {
-    commentId = uuid.v4();
+    var commentId = uuid.v4();
   }
 
   var authorName = jwt.decode(req.headers.authorization.split(" ")[1]).name;

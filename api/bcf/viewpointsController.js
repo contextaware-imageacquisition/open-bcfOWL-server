@@ -567,14 +567,13 @@ exports.get_viewpoint = (req, res, created) => {
 };
 
 exports.post_viewpoint = (req, res, next) => {
-  console.log("Test");
   const projectId = req.params.projectId;
   const topicId = req.params.topicId;
 
   if (req.body.guid) {
-    viewpointId = req.body.guid;
+    var viewpointId = req.body.guid;
   } else {
-    viewpointId = uuid.v4();
+    var viewpointId = uuid.v4();
   }
 
   var file64 = req.body.snapshot.snapshot_data;
@@ -632,8 +631,6 @@ exports.post_viewpoint = (req, res, next) => {
           }
       `
         );
-
-        console.log(urlencoded);
 
         var requestOptions = {
           method: "POST",
