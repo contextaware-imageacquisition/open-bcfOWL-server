@@ -137,11 +137,9 @@ exports.get_all_viewpoints = (req, res, next) => {
           }
 
           if (bcfMap[object].selection) {
-            console.log(bcfMap[object].selection);
             selectionArr = bcfMap[object].selection;
             tempSelectionArr = [];
             for (selection in selectionArr) {
-              console.log(bcfMap[selectionArr[selection]]);
               tempSelectionArr.push(bcfMap[selectionArr[selection]]);
             }
             tempSelection = tempSelectionArr;
@@ -158,6 +156,8 @@ exports.get_all_viewpoints = (req, res, next) => {
 
           tempViewpoint["guid"] = viewpointValues.guid;
           tempViewpoint["topic_guid"] = viewpointValues.topic_guid;
+          tempViewpoint["originating_document"] =
+            viewpointValues.originating_document;
 
           tempSetupHints["spaces_visible"] = viewpointValues.spaces_visible;
           tempSetupHints["space_boundaries_visible"] =
@@ -299,7 +299,6 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
           bcfMap[binding.s.value] = sparqlConverter.toViewpointJson(binding);
         }
       }
-      console.log(bcfMap);
       for (object in bcfMap) {
         var tempComponents = {};
         var tempVisibility = {};
@@ -343,6 +342,8 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
 
           tempViewpoint["guid"] = viewpointValues.guid;
           tempViewpoint["topic_guid"] = viewpointValues.topic_guid;
+          tempViewpoint["originating_document"] =
+            viewpointValues.originating_document;
 
           tempSetupHints["spaces_visible"] = viewpointValues.spaces_visible;
           tempSetupHints["space_boundaries_visible"] =

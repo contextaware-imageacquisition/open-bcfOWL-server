@@ -315,6 +315,13 @@ function toViewpointJson(binding) {
     value = binding.o.value;
     convertedValue["snapshot_type"] = value;
   } else if (
+    binding.p.value ==
+    "http://lbd.arch.rwth-aachen.de/bcfOWL/hasOriginatingDocument"
+  ) {
+    console.log("#############ORIGINATING############");
+    value = binding.o.value;
+    convertedValue["originating_document"] = value;
+  } else if (
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/SpacesVisible"
   ) {
     convertedValue["spaces_visibile"] = binding.o.value;
