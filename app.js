@@ -24,7 +24,7 @@ const sparqlRoutes = require("./api/routes");
 app.use(morgan("dev"));
 //app.use("/uploads", express.static("uploads"))
 app.use(express.urlencoded({ extended: false }));
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "100mb" }));
 app.use(express.json());
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
