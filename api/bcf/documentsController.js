@@ -126,7 +126,7 @@ exports.get_document = (req, res, next) => {
 
 exports.post_document = (req, res, next) => {
   const projectId = req.params.projectId;
-
+  //TODO: New system for handling files. Currently they are saved with their filename. Smarter implementation (with versions?) in the future.
   const documentId = uuid.v4();
 
   var data = new Buffer.from("");
@@ -142,17 +142,13 @@ exports.post_document = (req, res, next) => {
 
     const fileType = filename.split(".")[1];
 
-    console.log(filename);
-    console.log(fileType);
-
     var formdata = new FormData();
-    formdata.append("fileStream", data, `${documentId}.${fileType}`);
+    formdata.append("fileStream", data, `${filename}`);
 
     var fileHeader = new fetch.Headers();
     fileHeader.append("Authorization", "Basic " + fuseki.fileauth());
 
-    const fileUrl =
-      process.env.FILESERVER_URL + `${projectId}/${documentId}.${fileType}`;
+    const fileUrl = process.env.FILESERVER_URL + `${projectId}/${filename}`;
 
     var requestOptions = {
       method: "POST",

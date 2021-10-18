@@ -1,10 +1,10 @@
 const express = require("express");
 const morgan = require("morgan");
-const http = require("http");
 const mongoose = require("mongoose");
-const cors = require("cors");
-// mongoose.set("useFindAndModify", false);
-// mongoose.set("useCreateIndex", true);
+
+const swaggerUi = require("swagger-ui-express"),
+  swaggerDocument = require("./api/bcfAPI.json");
+
 const app = express();
 
 // BCF implementation
@@ -19,7 +19,8 @@ mongoose.connect(
   }
 );
 
-const sparqlRoutes = require("./api/routes");
+const ApiRouter = require("./api/apiRoutes");
+const SparqlRouter = require("./api/sparqlRoutes");
 
 app.use(morgan("dev"));
 //app.use("/uploads", express.static("uploads"))
@@ -40,7 +41,9 @@ app.use((req, res, next) => {
 });
 
 // Routes which should handle requests
-app.use("/", sparqlRoutes);
+app.use("/api", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use("/bcf", ApiRouter);
+app.use("/sparql", SparqlRouter);
 
 // Error Handlers
 

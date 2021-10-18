@@ -12,6 +12,13 @@
     },
     {
       "url": "/"
+    },
+    {
+      "url": "http://localhost:3000/",
+      "description": "SwaggerHub API Auto Mocking"
+    },
+    {
+      "url": "/"
     }
   ],
   "security": [
