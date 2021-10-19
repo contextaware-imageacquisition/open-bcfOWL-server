@@ -650,7 +650,7 @@ exports.post_viewpoint = (req, res, next) => {
                 project:${viewpointId} a bcfOWL:Viewpoint ;
                   bcfOWL:hasGuid "${viewpointId}"^^xsd:string ;
                   bcfOWL:hasTopic project:${topicId} ;
-                  bcfOWL:hasSnapshot "${fileUrl}"^^xsd:anyURI ;
+                  bcfOWL:hasSnapshot "${process.env.BCF_URL}${projectId}/${viewpointId}.${req.body.snapshot.snapshot_type}"^^xsd:anyURI ;
                   bcfOWL:hasProject project:${projectId} ;\n` +
                     sparqlConverter.toViewpointSPARQL(req) +
                     `} WHERE {

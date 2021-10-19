@@ -738,7 +738,7 @@ function toViewpointSPARQL(request) {
     request.body.components.visibility.view_setup_hints.openings_visible ==
       false
   ) {
-    sparqlString += `\n bcfOWL:OpeningsVisible ${request.body.components.visibility.view_setup_hints.openings_visible} ;`;
+    sparqlString += `\n bcfOWL:openingsVisible ${request.body.components.visibility.view_setup_hints.openings_visible} ;`;
   }
 
   if (
@@ -747,7 +747,7 @@ function toViewpointSPARQL(request) {
     request.body.components.visibility.view_setup_hints
       .space_boundaries_visible == false
   ) {
-    sparqlString += `\n bcfOWL:SpaceBoundariesVisible ${request.body.components.visibility.view_setup_hints.space_boundaries_visible} ;`;
+    sparqlString += `\n bcfOWL:spaceBoundariesVisible ${request.body.components.visibility.view_setup_hints.space_boundaries_visible} ;`;
   }
 
   if (
@@ -755,7 +755,7 @@ function toViewpointSPARQL(request) {
       true ||
     request.body.components.visibility.view_setup_hints.spaces_visible == false
   ) {
-    sparqlString += `\n bcfOWL:SpacesVisible ${request.body.components.visibility.view_setup_hints.spaces_visible} ;`;
+    sparqlString += `\n bcfOWL:spacesVisible ${request.body.components.visibility.view_setup_hints.spaces_visible} ;`;
   }
 
   if (
