@@ -21,6 +21,7 @@ mongoose.connect(
 
 const ApiRouter = require("./api/apiRoutes");
 const SparqlRouter = require("./api/sparqlRoutes");
+const GraphRouter = require("./api/graphRoutes");
 
 app.use(morgan("dev"));
 //app.use("/uploads", express.static("uploads"))
@@ -44,6 +45,7 @@ app.use((req, res, next) => {
 app.use("/api", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/bcf", ApiRouter);
 app.use("/sparql", SparqlRouter);
+app.use("/graph", GraphRouter);
 
 // Error Handlers
 

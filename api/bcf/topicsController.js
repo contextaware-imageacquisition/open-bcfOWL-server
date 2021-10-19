@@ -252,7 +252,7 @@ exports.post_topic = (req, res, next) => {
         "update",
         `
         PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-        PREFIX project: <${process.env.BCF_URL + projectId}/>
+        PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         PREFIX users: <${process.env.BCF_URL}users#>
 
@@ -355,7 +355,7 @@ exports.put_topic = (req, res, next) => {
         "update",
         `
         PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-        PREFIX project: <${process.env.BCF_URL + projectId}/>
+        PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         
         DELETE {

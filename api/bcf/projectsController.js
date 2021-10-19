@@ -102,7 +102,7 @@ exports.get_projects = (req, res, next) => {
             "query",
             `
             PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-            PREFIX project: <${process.env.BCF_URL + projectId}/>
+            PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
         
             SELECT ?s ?p ?o
             WHERE {
@@ -222,7 +222,7 @@ exports.post_project = (req, res, next) => {
               "update",
               `
               PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-              PREFIX project: <${process.env.BCF_URL + projectId}/>
+              PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
               PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
               

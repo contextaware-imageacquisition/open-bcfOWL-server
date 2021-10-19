@@ -25,6 +25,7 @@ exports.auth_signup = (req, res, next) => {
   User.find({ id: req.body.id })
     .exec()
     .then((user) => {
+      var userId = uuid.v4();
       if (user.length >= 1) {
         return res.status(409).json({
           message: "Mail already registered",
@@ -40,6 +41,7 @@ exports.auth_signup = (req, res, next) => {
               _id: new mongoose.Types.ObjectId(),
               id: req.body.id,
               name: req.body.name,
+              URI: `${req.body.name.replace(" ", "_")}_${userId}`,
               password: hash,
               role: req.body.role,
             });
@@ -52,8 +54,6 @@ exports.auth_signup = (req, res, next) => {
                   "application/x-www-form-urlencoded"
                 );
                 myHeaders.append("Authorization", "Basic " + fuseki.auth());
-
-                var userId = uuid.v4();
 
                 var urlencoded = new URLSearchParams();
                 urlencoded.append(

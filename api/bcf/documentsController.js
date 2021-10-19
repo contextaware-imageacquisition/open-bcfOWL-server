@@ -171,7 +171,7 @@ exports.post_document = (req, res, next) => {
             "update",
             `
           PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-          PREFIX project: <${process.env.BCF_URL + projectId}/>
+          PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
           PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
           PREFIX geo: <http://www.opengis.net/ont/geosparql#>
           
@@ -230,7 +230,7 @@ exports.get_spatial = (req, res, next) => {
     "query",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-    PREFIX project: <${process.env.BCF_URL + projectId}/>
+    PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
 
     SELECT ?s ?p ?o
     WHERE {
@@ -279,7 +279,7 @@ exports.post_spatial = (req, res, next) => {
     "update",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-    PREFIX project: <${process.env.BCF_URL + projectId}/>
+    PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     PREFIX geo: <http://www.opengis.net/ont/geosparql#>
     
@@ -291,15 +291,9 @@ exports.post_spatial = (req, res, next) => {
         bcfOWL:hasSpatialRepresentation project:${spatialId} .
 
       project:${spatialId} a bcfOWL:SpatialRepresentation ;
-        bcfOWL:hasLocation  "POINT Z(${req.body.location.x} ${
-      req.body.location.y
-    } ${req.body.location.z})"^^geo:wktLiteral ;
-        bcfOWL:hasRotation  "POINT Z(${req.body.rotation.x} ${
-      req.body.rotation.y
-    } ${req.body.rotation.z})"^^geo:wktLiteral ;
-        bcfOWL:hasScale     "POINT Z(${req.body.scale.x} ${req.body.scale.y} ${
-      req.body.scale.z
-    })"^^geo:wktLiteral ;
+        bcfOWL:hasLocation  "POINT Z(${req.body.location.x} ${req.body.location.y} ${req.body.location.z})"^^geo:wktLiteral ;
+        bcfOWL:hasRotation  "POINT Z(${req.body.rotation.x} ${req.body.rotation.y} ${req.body.rotation.z})"^^geo:wktLiteral ;
+        bcfOWL:hasScale     "POINT Z(${req.body.scale.x} ${req.body.scale.y} ${req.body.scale.z})"^^geo:wktLiteral ;
         bcfOWL:hasAlignment "center"^^xsd:string ;
         bcfOWL:hasDocument  project:${documentId};
 
@@ -349,7 +343,7 @@ exports.get_documentRefs = (req, res, next) => {
     "query",
     `
             PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-        PREFIX project: <${process.env.BCF_URL + projectId}/>
+            PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         PREFIX users: <${process.env.BCF_URL}users#>
 
@@ -396,7 +390,7 @@ exports.get_all_documentRefs = (req, res, next) => {
     "query",
     `
     PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-    PREFIX project: <${process.env.BCF_URL + projectId}/>
+    PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     PREFIX users: <${process.env.BCF_URL}users#>
 
@@ -451,7 +445,7 @@ exports.post_documentRefs = (req, res, next) => {
     "update",
     `
         PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
-        PREFIX project: <${process.env.BCF_URL + projectId}/>
+        PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         PREFIX users: <${process.env.BCF_URL}users#>
 
