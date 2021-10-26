@@ -8,4 +8,6 @@ const FileController = require("./files/filesController");
 
 router.get("/:projectId/:ressource", checkAuth, FileController.get_file);
 
+router.post("/:projectId/:ressource", checkAuth, FileController.post_file);
+
 module.exports = router;

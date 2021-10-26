@@ -35,6 +35,38 @@ exports.sparql_query_endpoint = (req, res, next) => {
     });
 };
 
+exports.sparql_update_endpoint = (req, res, next) => {
+  projectId = req.params.projectId;
+  var myHeaders = new fetch.Headers();
+  myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+  myHeaders.append("Authorization", "Basic " + fuseki.auth());
+
+  if (req.headers.accept) {
+    myHeaders.append("Accept", req.headers["accept"]);
+  }
+
+  var urlencoded = new URLSearchParams();
+  urlencoded.append("update", req.body.update);
+  // res.status(200).json("okay");
+
+  var requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: urlencoded,
+    redirect: "follow",
+  };
+
+  fetch(process.env.FUSEKI_URL + projectId, requestOptions, requestOptions)
+    .then((response) => response.json())
+    .then((result) => {
+      console.log(result);
+      res.status(200).json(result);
+    })
+    .catch((error) => {
+      console.log("error", error);
+    });
+};
+
 exports.get_ressource = (req, res, next) => {
   var projectId = req.params.projectId;
   var ressource = req.params.ressource;

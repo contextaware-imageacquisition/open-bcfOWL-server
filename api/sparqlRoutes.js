@@ -15,6 +15,12 @@ router.post(
 );
 
 router.post(
+  "/:projectId/update",
+  checkAuth,
+  SparqlEndpoint.sparql_update_endpoint
+);
+
+router.post(
   "/:projectId/user/query",
   checkAuth,
   SparqlEndpoint.sparql_query_endpoint

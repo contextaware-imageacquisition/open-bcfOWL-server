@@ -149,6 +149,8 @@ exports.post_document = (req, res, next) => {
     fileHeader.append("Authorization", "Basic " + fuseki.fileauth());
 
     const fileUrl = process.env.FILESERVER_URL + `${projectId}/${filename}`;
+    const publicFileUrl =
+      process.env.BCF_URL + `files/${projectId}/${filename}`;
 
     var requestOptions = {
       method: "POST",
@@ -179,7 +181,7 @@ exports.post_document = (req, res, next) => {
             project:${documentId} a bcfOWL:Document ;
               bcfOWL:hasGuid "${documentId}"^^xsd:string ;
               bcfOWL:hasFilename "${filename}" ;
-              bcfOWL:hasDocumentURL "${fileUrl}"^^xsd:anyURI ;
+              bcfOWL:hasDocumentURL "${publicFileUrl}"^^xsd:anyURI ;
               bcfOWL:hasProject project:${projectId} ;\n` +
               `} WHERE {
               ?s ?p ?o

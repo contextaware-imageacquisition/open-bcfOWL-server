@@ -29,3 +29,42 @@ exports.get_file = (req, res, next) => {
       res.status(400).json(error);
     });
 };
+
+exports.post_file = (req, res, next) => {
+  const projectId = req.params.projectId;
+  const fileName = req.params.ressource;
+
+  var data = new Buffer.from("");
+
+  req.on("data", function (chunk) {
+    data = Buffer.concat([data, chunk]);
+  });
+  req.on("end", function () {
+    const filename = fileName;
+
+    const fileType = filename.split(".")[1];
+
+    var formdata = new FormData();
+    formdata.append("fileStream", data, `${filename}`);
+
+    var fileHeader = new fetch.Headers();
+    fileHeader.append("Authorization", "Basic " + fuseki.fileauth());
+
+    const fileUrl = process.env.FILESERVER_URL + `${projectId}/${filename}`;
+
+    var requestOptions = {
+      method: "POST",
+      headers: fileHeader,
+      body: formdata,
+      redirect: "follow",
+    };
+    fetch(fileUrl, requestOptions)
+      .then((response) => response)
+      .then((result) => {
+        res.status(201).json("okay");
+      })
+      .catch((error) => {
+        res.status(400).json(error);
+      });
+  });
+};
