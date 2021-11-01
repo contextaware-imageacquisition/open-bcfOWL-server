@@ -12,6 +12,7 @@ exports.sparql_query_endpoint = (req, res, next) => {
   if (req.headers.accept) {
     myHeaders.append("Accept", req.headers["accept"]);
   }
+  console.log(req.body);
 
   var urlencoded = new URLSearchParams();
   urlencoded.append("query", req.body.query);
@@ -45,6 +46,7 @@ exports.sparql_update_endpoint = (req, res, next) => {
     myHeaders.append("Accept", req.headers["accept"]);
   }
 
+  console.log(req.body);
   var urlencoded = new URLSearchParams();
   urlencoded.append("update", req.body.update);
   // res.status(200).json("okay");
@@ -57,7 +59,7 @@ exports.sparql_update_endpoint = (req, res, next) => {
   };
 
   fetch(process.env.FUSEKI_URL + projectId, requestOptions, requestOptions)
-    .then((response) => response.json())
+    .then((response) => response.text())
     .then((result) => {
       console.log(result);
       res.status(200).json(result);

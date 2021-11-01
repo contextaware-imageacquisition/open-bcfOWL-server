@@ -1,5 +1,7 @@
 const fetch = require("node-fetch");
 const fuseki = require("../Utilities/FusekiUtilities");
+const FormData = require("form-data");
+const imageThumbnail = require("image-thumbnail");
 
 exports.get_file = (req, res, next) => {
   const projectId = req.params.projectId;
@@ -61,7 +63,47 @@ exports.post_file = (req, res, next) => {
     fetch(fileUrl, requestOptions)
       .then((response) => response)
       .then((result) => {
-        res.status(201).json("okay");
+        if (filename.split(".")[1] == "png") {
+          const options = { width: 200, height: 200, fit: "cover" };
+          imageThumbnail(data, options)
+            .then((thumbnail) => {
+              var formdata = new FormData();
+              formdata.append(
+                "fileStream",
+                thumbnail,
+                `${filename.split(".")[0]}_thumbnail.${filename.split(".")[1]}`
+              );
+
+              var fileHeader = new fetch.Headers();
+              fileHeader.append("Authorization", "Basic " + fuseki.fileauth());
+
+              const fileUrl =
+                process.env.FILESERVER_URL +
+                `${projectId}/${filename.split(".")[0]}_thumbnail.${
+                  filename.split(".")[1]
+                }`;
+
+              var requestOptions = {
+                method: "POST",
+                headers: fileHeader,
+                body: formdata,
+                redirect: "follow",
+              };
+              fetch(fileUrl, requestOptions)
+                .then((response) => response)
+                .then((result) => {
+                  res.status(201).json("okay");
+                })
+                .catch((error) => {
+                  res.status(400).json(error);
+                });
+            })
+            .catch((error) => {
+              res.status(400).json(error);
+            });
+        } else {
+          res.status(201).json("okay");
+        }
       })
       .catch((error) => {
         res.status(400).json(error);
