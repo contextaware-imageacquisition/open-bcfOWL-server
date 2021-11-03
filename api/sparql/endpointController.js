@@ -141,7 +141,6 @@ exports.get_graph = (req, res, next) => {
 };
 
 exports.get_user = (req, res, next) => {
-  console.log("Test User");
   var userId = req.params.ressource;
 
   console.log(userId);
@@ -150,17 +149,18 @@ exports.get_user = (req, res, next) => {
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
   myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
-  //TODO: If header "accept" is true, take that header, otherwise leave header (returns ttl)
+  if (req.headers.accept) {
+    myHeaders.append("Accept", req.headers["accept"]);
+  }
 
   var urlencoded = new URLSearchParams();
   urlencoded.append(
     "query",
     `
-    PREFIX user: <http://my-bcf-url/users#>
     CONSTRUCT { ?s ?p ?o}
-    WHERE {user:${userId} ?p ?o;
+    WHERE {<https://caia.herokuapp.com/users/${userId}> ?p ?o;
     ?p ?o .      
-    bind(user:${userId} as ?s)
+    bind(<https://caia.herokuapp.com/users/${userId}> as ?s)
     }
     `
   );

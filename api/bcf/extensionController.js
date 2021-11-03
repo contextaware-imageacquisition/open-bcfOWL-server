@@ -39,6 +39,7 @@ exports.get_extensions = (req, res, bCreated) => {
     .then((response) => response.json())
     .then((result) => {
       var userResponse = result.results.bindings;
+      console.log(userResponse);
       for (userEntry in userResponse) {
         users[userResponse[userEntry].s.value] = userResponse[
           userEntry

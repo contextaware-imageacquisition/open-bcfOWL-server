@@ -20,18 +20,6 @@ router.post(
   SparqlEndpoint.sparql_update_endpoint
 );
 
-router.post("/user/query", checkAuth, SparqlEndpoint.sparql_query_endpoint);
-
-router.get(
-  "/users/:ressource",
-  basicAuth({
-    authorizer: authorizer.authorizer,
-    authorizeAsync: true,
-    challenge: true,
-  }),
-  SparqlEndpoint.get_user
-);
-
 //TODO Ressources must be split by / ... not by #!
 router.get(
   "/:projectId/:ressource",

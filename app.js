@@ -23,6 +23,7 @@ const ApiRouter = require("./api/apiRoutes");
 const SparqlRouter = require("./api/sparqlRoutes");
 const GraphRouter = require("./api/graphRoutes");
 const FileRouter = require("./api/fileRoutes");
+const UserRouter = require("./api/userRoutes");
 
 app.use(morgan("dev"));
 //app.use("/uploads", express.static("uploads"))
@@ -47,6 +48,7 @@ app.use("/api", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/bcf", ApiRouter);
 app.use("/sparql", SparqlRouter);
 app.use("/graph", GraphRouter);
+app.use("/users", UserRouter);
 app.use("/files", FileRouter);
 
 // Error Handlers

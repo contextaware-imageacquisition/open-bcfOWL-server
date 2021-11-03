@@ -474,6 +474,7 @@ function toExtensionJson(response, users, version) {
       "http://lbd.arch.rwth-aachen.de/bcfOWL/hasUser"
     ) {
       value = bindings[binding].o.value;
+      console.log(value);
       userMails.push(users[value]);
     }
   }
