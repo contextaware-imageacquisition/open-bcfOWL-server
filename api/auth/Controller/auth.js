@@ -171,7 +171,7 @@ exports.auth_login = (req, res, next) => {
           const token = jwt.sign(
             {
               id: user[0].id,
-              userId: user[0]._id,
+              URI: user[0].URI,
               name: user[0].name,
               role: user[0].role,
             },
