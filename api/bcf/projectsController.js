@@ -68,31 +68,29 @@ exports.get_projects = (req, res, next) => {
           var services = "";
           var serviceURL = `${process.env.FUSEKI_URL.split("://")[0]}://${
             process.env.FUSEKI_NAME
-          }:${process.env.FUSEKI_PW}@${
-            process.env.FUSEKI_URL.split("://")[1]
-          }/`;
+          }:${process.env.FUSEKI_PW}@${process.env.FUSEKI_URL.split("://")[1]}`;
 
           for (dataset in datasetPaths) {
             if (dataset == 0) {
               var query = `
-          {
-            SERVICE <${serviceURL + datasetPaths[dataset].slice(1)}> {
-              ?s a bcfOWL:Project;
-                bcfOWL:hasUser <${author}> ;
-                ?p ?o .
-            }
-          }`;
+              {
+                SERVICE <${serviceURL + datasetPaths[dataset].slice(1)}> {
+                  ?s a bcfOWL:Project;
+                    bcfOWL:hasUser <${author}> ;
+                    ?p ?o .
+                }
+              }`;
 
               services += query;
             } else {
               var query = `
-          UNION {
-            SERVICE <${serviceURL + datasetPaths[dataset].slice(1)}> {
-              ?s a bcfOWL:Project;
-                bcfOWL:hasUser <${author}> ;
-                ?p ?o .
-            }
-          }`;
+              UNION {
+                SERVICE <${serviceURL + datasetPaths[dataset].slice(1)}> {
+                  ?s a bcfOWL:Project;
+                    bcfOWL:hasUser <${author}> ;
+                    ?p ?o .
+                }
+              }`;
               services += query;
             }
           }
