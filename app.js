@@ -8,7 +8,6 @@ const swaggerUi = require("swagger-ui-express"),
 const app = express();
 
 // BCF implementation
-
 mongoose.connect(
   process.env.MONGO_ATLAS_URL +
     process.env.MONGO_ATLAS_MAIN_SERVER +
@@ -17,7 +16,11 @@ mongoose.connect(
     useNewUrlParser: true,
     useUnifiedTopology: true,
   }
-);
+).then(() => console.log("\nConnection with MongoDB established\n"))
+.catch((err) => {
+  console.log('error', err);
+  throw err
+})
 
 const ApiRouter = require("./api/apiRoutes");
 const SparqlRouter = require("./api/sparqlRoutes");
