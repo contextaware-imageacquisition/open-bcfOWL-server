@@ -54,8 +54,11 @@ app.use("/graph", GraphRouter);
 app.use("/users", UserRouter);
 app.use("/files", FileRouter);
 
-// Error Handlers
+app.get('/test', (req, res) => {
+  res.send('test ok')
+})
 
+// Error Handlers
 app.use((req, res, next) => {
   const error = new Error("Not found");
   error.status = 404;
@@ -70,5 +73,7 @@ app.use((error, req, res, next) => {
     },
   });
 });
+
+
 
 module.exports = app;

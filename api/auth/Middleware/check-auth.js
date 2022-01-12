@@ -17,7 +17,7 @@ var { createSolidTokenVerifier } = require('@solid/access-token-verifier')
 var { SolidNodeClient } = require('solid-node-client')
 var solidOidcAccessTokenVerifier = createSolidTokenVerifier()
 
-module.exports = (req, res, next) {
+module.exports = async (req, res, next) => {
   const authorizationHeader = req.headers.authorization
   const dpopHeader = req.headers.dpop
   const method = req.method
