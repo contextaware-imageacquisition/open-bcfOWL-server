@@ -46,7 +46,7 @@ exports.get_all_comments = (req, res, next) => {
       urlencoded.append(
         "query",
         `
-          PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+          PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
           \nSELECT ?s ?p ?o
           \nWHERE {?s a bcfOWL:Comment ;
             \n?p ?o .
@@ -182,7 +182,7 @@ exports.get_all_topic_comments = (req, res, next) => {
   urlencoded.append(
     "query",
     `
-        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
         PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
         SELECT ?s ?p ?o
         WHERE {
@@ -244,7 +244,7 @@ exports.get_comment = (req, res, created) => {
       urlencoded.append(
         "query",
         `
-        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
         PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
         
         SELECT ?s ?p ?o
@@ -350,7 +350,7 @@ exports.post_comment = (req, res, next) => {
       urlencoded.append(
         "update",
         `
-        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
         PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         
@@ -450,7 +450,7 @@ exports.put_comment = (req, res, next) => {
       urlencoded.append(
         "update",
         `
-        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
         PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         

@@ -16,7 +16,7 @@ exports.get_all_viewpoints = (req, res, next) => {
   urlencoded.append(
     "query",
     `
-    PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/> 
+    PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#> 
     PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
     PREFIX geo: <http://www.opengis.net/ont/geosparql#>
     
@@ -197,7 +197,7 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
   urlencoded.append(
     "query",
     `
-    PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/> 
+    PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#> 
     PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
     PREFIX geo: <http://www.opengis.net/ont/geosparql#>
     
@@ -389,7 +389,7 @@ exports.get_viewpoint = (req, res, created) => {
   urlencoded.append(
     "query",
     `
-    PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/> 
+    PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#> 
     PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
     PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 
@@ -641,7 +641,7 @@ exports.post_viewpoint = (req, res, next) => {
                 urlencoded.append(
                   "update",
                   `
-              PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+              PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
               PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
               PREFIX geo: <http://www.opengis.net/ont/geosparql#>
@@ -705,7 +705,7 @@ exports.get_snapshot = (req, res, next) => {
   urlencoded.append(
     "query",
     `
-    PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+    PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
 
     SELECT ?o
     WHERE {

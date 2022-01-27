@@ -47,7 +47,7 @@ exports.get_all_topics = (req, res, next) => {
       urlencoded.append(
         "query",
         `
-        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
         SELECT ?s ?p ?o
         WHERE {?s a bcfOWL:Topic ;
           ?p ?o .
@@ -148,7 +148,7 @@ exports.get_topic = (req, res, created) => {
       urlencoded.append(
         "query",
         `
-        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
 
         SELECT ?s ?p ?o
         WHERE {
@@ -251,7 +251,7 @@ exports.post_topic = (req, res, next) => {
       urlencoded.append(
         "update",
         `
-        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
         PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         PREFIX users: <${process.env.BCF_URL}users#>
@@ -354,7 +354,7 @@ exports.put_topic = (req, res, next) => {
       urlencoded.append(
         "update",
         `
-        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
         PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         

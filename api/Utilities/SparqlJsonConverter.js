@@ -24,28 +24,28 @@ function setExtensionString(extension) {
 
 function toTopicJson(binding, users) {
   var convertedValue = {};
-  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasGuid") {
+  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid") {
     convertedValue["guid"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasIndex"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasIndex"
   ) {
     convertedValue["index"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTitle"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasTitle"
   ) {
     convertedValue["title"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasCreationAuthor"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasCreationAuthor"
   ) {
     value = binding.o.value;
     convertedValue["creation_author"] = users[value];
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasModifiedAuthor"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasModifiedAuthor"
   ) {
     value = binding.o.value;
     convertedValue["modified_author"] = users[value];
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTopicStatus"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasTopicStatus"
   ) {
     value = binding.o.value;
     if (value.split("#").length > 1) {
@@ -55,12 +55,12 @@ function toTopicJson(binding, users) {
     }
     convertedValue["topic_status"] = stringArray[stringArray.length - 1];
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasAssignedTo"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasAssignedTo"
   ) {
     value = binding.o.value;
     convertedValue["assigned_to"] = users[value];
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTopicType"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasTopicType"
   ) {
     value = binding.o.value;
     if (value.split("#").length > 1) {
@@ -70,7 +70,7 @@ function toTopicJson(binding, users) {
     }
     convertedValue["topic_type"] = stringArray[stringArray.length - 1];
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasLabels"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasLabels"
   ) {
     value = binding.o.value;
     if (value.split("#").length > 1) {
@@ -80,15 +80,15 @@ function toTopicJson(binding, users) {
     }
     convertedValue["labels"] = [stringArray[stringArray.length - 1]];
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasCreationDate"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasCreationDate"
   ) {
     convertedValue["creation_date"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasModifiedDate"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasModifiedDate"
   ) {
     convertedValue["modified_date"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasPriority"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasPriority"
   ) {
     value = binding.o.value;
 
@@ -106,10 +106,10 @@ function toTopicJson(binding, users) {
 
 function toDocumentJson(binding) {
   var convertedValue = {};
-  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasGuid") {
+  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid") {
     convertedValue["guid"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasFilename"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasFilename"
   ) {
     convertedValue["filename"] = binding.o.value;
   }
@@ -126,7 +126,7 @@ function toDocumentRefJson(result) {
     console.log(bindings[binding].p.value);
     if (
       bindings[binding].p.value ==
-      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasGuid"
+      "http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid"
     ) {
       var guid =
         bindings[binding].s.value.split("/")[
@@ -141,7 +141,7 @@ function toDocumentRefJson(result) {
       }
     } else if (
       bindings[binding].p.value ==
-      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasDescription"
+      "http://lbd.arch.rwth-aachen.de/bcfOWL#hasDescription"
     ) {
       var guid =
         bindings[binding].s.value.split("/")[
@@ -156,7 +156,7 @@ function toDocumentRefJson(result) {
       }
     } else if (
       bindings[binding].p.value ==
-      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasDocument"
+      "http://lbd.arch.rwth-aachen.de/bcfOWL#hasDocument"
     ) {
       var guid =
         bindings[binding].s.value.split("/")[
@@ -183,10 +183,10 @@ function toDocumentRefJson(result) {
 
 function toSpatialJson(binding) {
   var convertedValue = {};
-  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasAlignment") {
+  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasAlignment") {
     convertedValue["alignment"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasLocation"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasLocation"
   ) {
     var value = binding.o.value;
     value = value.replace("POINT Z(", "");
@@ -199,7 +199,7 @@ function toSpatialJson(binding) {
     };
     convertedValue["location"] = vector;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasRotation"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasRotation"
   ) {
     var value = binding.o.value;
     value = value.replace("POINT Z(", "");
@@ -212,7 +212,7 @@ function toSpatialJson(binding) {
     };
     convertedValue["rotation"] = vector;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasScale"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasScale"
   ) {
     var value = binding.o.value;
     value = value.replace("POINT Z(", "");
@@ -231,10 +231,10 @@ function toSpatialJson(binding) {
 
 function toProjectJson(binding) {
   var convertedValue = {};
-  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasGuid") {
+  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid") {
     convertedValue["project_id"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasName"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasName"
   ) {
     convertedValue["name"] = binding.o.value;
   }
@@ -244,10 +244,10 @@ function toProjectJson(binding) {
 
 function toCommentJson(binding, users) {
   var convertedValue = {};
-  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasGuid") {
+  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid") {
     convertedValue["guid"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTopic"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasTopic"
   ) {
     value = binding.o.value;
     console.log(value.split("#"));
@@ -258,30 +258,30 @@ function toCommentJson(binding, users) {
     }
     convertedValue["topic_guid"] = stringArray[stringArray.length - 1];
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasComment"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasComment"
   ) {
     convertedValue["comment"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasAuthor"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasAuthor"
   ) {
     value = binding.o.value;
     convertedValue["author"] = users[value];
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasModifiedAuthor"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasModifiedAuthor"
   ) {
     value = binding.o.value;
     convertedValue["modified_author"] = users[value];
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasCommentDate"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasCommentDate"
   ) {
     convertedValue["date"] = binding.o.value;
   } else if (
     binding.p.value ==
-    "http://lbd.arch.rwth-aachen.de/bcfOWL/hasCommentModifiedDate"
+    "http://lbd.arch.rwth-aachen.de/bcfOWL#hasCommentModifiedDate"
   ) {
     convertedValue["modified_date"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasViewpoint"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasViewpoint"
   ) {
     value = binding.o.value;
     if (value.split("#").length > 1) {
@@ -297,10 +297,10 @@ function toCommentJson(binding, users) {
 
 function toViewpointJson(binding) {
   var convertedValue = {};
-  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasGuid") {
+  if (binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid") {
     convertedValue["guid"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTopic"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasTopic"
   ) {
     value = binding.o.value;
     if (value.split("#").length > 1) {
@@ -310,38 +310,38 @@ function toViewpointJson(binding) {
     }
     convertedValue["topic_guid"] = stringArray[stringArray.length - 1];
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasSnapshotType"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasSnapshotType"
   ) {
     value = binding.o.value;
     convertedValue["snapshot_type"] = value;
   } else if (
     binding.p.value ==
-    "http://lbd.arch.rwth-aachen.de/bcfOWL/hasOriginatingDocument"
+    "http://lbd.arch.rwth-aachen.de/bcfOWL#hasOriginatingDocument"
   ) {
     console.log("#############ORIGINATING############");
     value = binding.o.value;
     convertedValue["originating_document"] = value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/SpacesVisible"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#SpacesVisible"
   ) {
     convertedValue["spaces_visibile"] = binding.o.value;
   } else if (
     binding.p.value ==
-    "http://lbd.arch.rwth-aachen.de/bcfOWL/SpaceBoundariesVisible"
+    "http://lbd.arch.rwth-aachen.de/bcfOWL#SpaceBoundariesVisible"
   ) {
     convertedValue["space_boundaries_visible"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/OpeningsVisible"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#OpeningsVisible"
   ) {
     convertedValue["openings_visible"] = binding.o.value;
   } else if (
     binding.p.value ==
-    "http://lbd.arch.rwth-aachen.de/bcfOWL/hasDefaulVisibility"
+    "http://lbd.arch.rwth-aachen.de/bcfOWL#hasDefaulVisibility"
   ) {
     convertedValue["default_visibility"] = binding.o.value;
   } else if (
     binding.p.value ==
-    "http://lbd.arch.rwth-aachen.de/bcfOWL/hasCameraViewPoint"
+    "http://lbd.arch.rwth-aachen.de/bcfOWL#hasCameraViewPoint"
   ) {
     var value = binding.o.value;
     value = value.replace("POINT Z(", "");
@@ -355,7 +355,7 @@ function toViewpointJson(binding) {
     convertedValue["camera_view_point"] = vector;
   } else if (
     binding.p.value ==
-    "http://lbd.arch.rwth-aachen.de/bcfOWL/hasCameraDirection"
+    "http://lbd.arch.rwth-aachen.de/bcfOWL#hasCameraDirection"
   ) {
     var value = binding.o.value;
     value = value.replace("POINT Z(", "");
@@ -368,7 +368,7 @@ function toViewpointJson(binding) {
     };
     convertedValue["camera_direction"] = vector;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasCameraUpVector"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasCameraUpVector"
   ) {
     var value = binding.o.value;
     value = value.replace("POINT Z(", "");
@@ -381,25 +381,25 @@ function toViewpointJson(binding) {
     };
     convertedValue["camera_up_vector"] = vector;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasFieldOfView"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasFieldOfView"
   ) {
     convertedValue["field_of_view"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasAspectRatio"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasAspectRatio"
   ) {
     convertedValue["aspect_ratio"] = binding.o.value;
   } else if (
     binding.p.value ==
-    "http://lbd.arch.rwth-aachen.de/bcfOWL/hasPerspectiveCamera"
+    "http://lbd.arch.rwth-aachen.de/bcfOWL#hasPerspectiveCamera"
   ) {
     convertedValue["perspective_camera"] = binding.o.value;
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasIfcGuid"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasIfcGuid"
   ) {
     convertedValue["ifc_guid"] = binding.o.value;
   } else if (
     binding.p.value ==
-    "http://lbd.arch.rwth-aachen.de/bcfOWL/hasOriginatingSystem"
+    "http://lbd.arch.rwth-aachen.de/bcfOWL#hasOriginatingSystem"
   ) {
     console.log(
       binding.o.value.split("/")[binding.o.value.split("/").length - 1]
@@ -407,15 +407,15 @@ function toViewpointJson(binding) {
     convertedValue["originating_system"] =
       binding.o.value.split("/")[binding.o.value.split("/").length - 1];
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasSelection"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasSelection"
   ) {
     convertedValue["selection"] = [binding.o.value];
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasException"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasException"
   ) {
     convertedValue["exception"] = [binding.o.value];
   } else if (
-    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL/hasComponent"
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasComponent"
   ) {
     convertedValue[binding.o.value] = "";
   }
@@ -436,42 +436,42 @@ function toExtensionJson(response, users, version) {
   for (binding in bindings) {
     if (
       bindings[binding].p.value ==
-      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasLabels"
+      "http://lbd.arch.rwth-aachen.de/bcfOWL#hasLabels"
     ) {
       value = bindings[binding].o.value;
       labels.push(splitURI(value));
     }
     if (
       bindings[binding].p.value ==
-      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTopicStatus"
+      "http://lbd.arch.rwth-aachen.de/bcfOWL#hasTopicStatus"
     ) {
       value = bindings[binding].o.value;
       status.push(splitURI(value));
     }
     if (
       bindings[binding].p.value ==
-      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasTopicType"
+      "http://lbd.arch.rwth-aachen.de/bcfOWL#hasTopicType"
     ) {
       value = bindings[binding].o.value;
       types.push(splitURI(value));
     }
     if (
       bindings[binding].p.value ==
-      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasPriority"
+      "http://lbd.arch.rwth-aachen.de/bcfOWL#hasPriority"
     ) {
       value = bindings[binding].o.value;
       priorities.push(splitURI(value));
     }
     if (
       bindings[binding].p.value ==
-      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasStage"
+      "http://lbd.arch.rwth-aachen.de/bcfOWL#hasStage"
     ) {
       value = bindings[binding].o.value;
       stages.push(splitURI(value));
     }
     if (
       bindings[binding].p.value ==
-      "http://lbd.arch.rwth-aachen.de/bcfOWL/hasUser"
+      "http://lbd.arch.rwth-aachen.de/bcfOWL#hasUser"
     ) {
       value = bindings[binding].o.value;
       console.log(value);

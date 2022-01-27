@@ -49,7 +49,7 @@ exports.get_extensions = (req, res, bCreated) => {
       urlencoded.append(
         "query",
         `
-        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/> 
+        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#> 
 
         SELECT ?s ?p ?o
         WHERE {
@@ -131,7 +131,7 @@ exports.post_extensions = (req, res, next) => {
       urlencoded.append(
         "update",
         `
-          PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL/>
+          PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
           PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
           PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
           PREFIX users: <${process.env.BCF_URL}users#>
