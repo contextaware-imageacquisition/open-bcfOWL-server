@@ -95,10 +95,14 @@ exports.post_file = (req, res, next) => {
                   res.status(201).json("okay");
                 })
                 .catch((error) => {
+                  console.log("Error uploading picture: ");
+                  console.log(error);
                   res.status(400).json(error);
                 });
             })
             .catch((error) => {
+              console.log("Error converting file to Thumbnail: ");
+              console.log(error);
               res.status(400).json(error);
             });
         } else {
