@@ -37,6 +37,7 @@ exports.sparql_query_endpoint = (req, res, next) => {
 };
 
 exports.sparql_update_endpoint = (req, res, next) => {
+  console.log("Start");
   projectId = req.params.projectId;
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
