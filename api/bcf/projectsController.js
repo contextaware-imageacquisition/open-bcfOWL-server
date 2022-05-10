@@ -206,6 +206,8 @@ exports.post_project = (req, res, next) => {
           redirect: "follow",
         };
 
+        var timestamp = new Date(Date.now()).toISOString();
+
         fetch(process.env.FUSEKI_URL + "users", requestOptions)
           .then((response) => response.json())
           .then((result) => {
@@ -230,6 +232,7 @@ exports.post_project = (req, res, next) => {
                   bcfOWL:hasGuid "${projectId}"^^xsd:string ;
                   bcfOWL:hasName "${req.body.name}"^^xsd:string ;
                   rdfs:comment  "${req.body.description}"^^xsd:string;
+                  bcfOWL:hasCreationDate "${timestamp}"^^xsd:datetime;
                   bcfOWL:hasPriority project:Priority_Low,  project:Priority_Medium, project:Priority_High;
                   bcfOWL:hasTopicStatus project:TopicStatus_Open, project:TopicStatus_Closed;
                   bcfOWL:hasTopicType project:TopicType_Issue, project:TopicType_InformationRequest;
