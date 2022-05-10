@@ -236,7 +236,7 @@ exports.post_project = (req, res, next) => {
                   bcfOWL:hasContext project:DocumentationContext;
                   bcfOWL:hasUser <${author}> .
 
-                project:DocumentationContext a bcfOWL:Context:
+                project:DocumentationContext a bcfOWL:Context;
                   rdfs:label  "Documentation Context"^^xsd:string;
                   rdfs:comment "The context for documenting buildings with BCF"^^xsd:string .
 
