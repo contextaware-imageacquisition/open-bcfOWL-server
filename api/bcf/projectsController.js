@@ -223,12 +223,57 @@ exports.post_project = (req, res, next) => {
               PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
               PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+              PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
               
               INSERT DATA {
                 project: a bcfOWL:Project;
                   bcfOWL:hasGuid "${projectId}"^^xsd:string ;
                   bcfOWL:hasName "${req.body.name}"^^xsd:string ;
+                  rdfs:comment  "${req.body.description}"^^xsd:string;
+                  bcfOWL:hasPriority project:Priority_Low,  project:Priority_Medium, project:Priority_High;
+                  bcfOWL:hasTopicStatus project:TopicStatus_Open, project:TopicStatus_Closed;
+                  bcfOWL:hasTopicType project:TopicType_Issue, project:TopicType_InformationRequest;
+                  bcfOWL:hasContext project:DocumentationContext;
                   bcfOWL:hasUser <${author}> .
+
+                project:DocumentationContext a bcfOWL:Context:
+                  rdfs:label  "Documentation Context"^^xsd:string;
+                  rdfs:comment "The context for documenting buildings with BCF"^^xsd:string .
+
+                project:Priority_Low a bcfOWL:Priority;
+                  rdfs:label    "Low"^^xsd:string;
+                  rdfs:comment  "A low priority"^^xsd:string;
+                  bcfOWL:hasContext project:DocumentationContext .
+
+                project:Priority_Medium a bcfOWL:Priority;
+                  rdfs:label    "Medium"^^xsd:string;
+                  rdfs:comment  "A medium priority"^^xsd:string;
+                  bcfOWL:hasContext project:DocumentationContext .
+
+                project:Priority_High a bcfOWL:Priority;
+                  rdfs:label    "High"^^xsd:string;
+                  rdfs:comment  "A high priority"^^xsd:string;
+                  bcfOWL:hasContext project:DocumentationContext .
+
+                project:TopicStatus_Open a bcfOWL:TopicStatus;
+                  rdfs:label    "Open"^^xsd:string;
+                  rdfs:comment  "A open issue"^^xsd:string;
+                  bcfOWL:hasContext project:DocumentationContext .
+
+                project:TopicStatus_Closed a bcfOWL:TopicStatus;
+                  rdfs:label    "Closed"^^xsd:string;
+                  rdfs:comment  "A closed issue"^^xsd:string;
+                  bcfOWL:hasContext project:DocumentationContext .
+
+                project:TopicType_Issue a bcfOWL:TopicType;
+                  rdfs:label    "Issue"^^xsd:string;
+                  rdfs:comment  "Used for communicating problems in the building"^^xsd:string;
+                  bcfOWL:hasContext project:DocumentationContext .
+
+                project:TopicType_InformationRequest a bcfOWL:TopicType;
+                  rdfs:label    "Information Request"^^xsd:string;
+                  rdfs:comment  "Using the BCF workflow for requesting specific, location- and/or element-based information"^^xsd:string;
+                  bcfOWL:hasContext project:DocumentationContext .
 
               }
               `

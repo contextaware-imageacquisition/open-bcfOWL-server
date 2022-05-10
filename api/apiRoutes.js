@@ -65,11 +65,24 @@ router.get(
   checkAuth,
   ExtensionsController.get_extensions
 );
+
 router.post(
   "/:version/projects/:projectId/extensions",
   checkAuth,
   ExtensionsController.post_extensions
 );
+
+// Files
+
+router.get(
+  "/:version/projects/:projectId/files_information",
+  checkAuth,
+  ExtensionsController.post_extensions
+);
+
+router.get("/:version/projects/:projectId/topics/:topicId/files", checkAuth);
+
+router.put("/:version/projects/:projectId/topics/:topicId/files", checkAuth);
 
 // Topics
 router.get(
