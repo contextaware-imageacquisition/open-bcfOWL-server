@@ -82,11 +82,7 @@ exports.get_ressource = (req, res, next) => {
   urlencoded.append(
     "query",
     `
-    PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
-    CONSTRUCT { ?s ?p ?o}
-    WHERE {project:${ressource} ?p ?o;
-    ?p ?o .      
-    bind(project:${ressource} as ?s)
+    DESCRIBE <${process.env.BCF_URL}graph/${projectId}/${ressource}>
     }
     `
   );
