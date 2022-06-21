@@ -1,6 +1,5 @@
 const fetch = require("node-fetch");
 const FormData = require("form-data");
-const Base64BufferThumbnail = require("base64-buffer-thumbnail");
 const sparqlConverter = require("../Utilities/SparqlJsonConverter");
 const uuid = require("uuid");
 const fuseki = require("../Utilities/FusekiUtilities");
@@ -581,66 +580,57 @@ exports.post_viewpoint = (req, res, next) => {
   var file64 = req.body.snapshot.snapshot_data;
   var decodedFile = new Buffer.from(file64, "base64");
 
-  Base64BufferThumbnail(decodedFile)
-    .then((thumbnail) => {
-      var formdataThumb = new FormData();
-      formdataThumb.append(
-        "fileStream",
-        thumbnail,
-        `${viewpointId}_thumbnail.${req.body.snapshot.snapshot_type}`
-      );
+  var formdata = new FormData();
+  formdata.append(
+    "fileStream",
+    decodedFile,
+    `${viewpointId}.${req.body.snapshot.snapshot_type}`
+  );
 
-      var formdata = new FormData();
-      formdata.append(
-        "fileStream",
-        decodedFile,
-        `${viewpointId}.${req.body.snapshot.snapshot_type}`
-      );
+  var fileHeader = new fetch.Headers();
+  fileHeader.append("Authorization", "Basic " + fuseki.fileauth());
 
-      var fileHeader = new fetch.Headers();
-      fileHeader.append("Authorization", "Basic " + fuseki.fileauth());
+  var requestOptions = {
+    method: "POST",
+    headers: fileHeader,
+    body: formdata,
+    redirect: "follow",
+  };
 
+  const fileUrl =
+    process.env.FILESERVER_URL +
+    `${projectId}/${viewpointId}.${req.body.snapshot.snapshot_type}`;
+
+  const fileUrlThumb =
+    process.env.FILESERVER_URL +
+    `${projectId}/${viewpointId}_thumbnail.${req.body.snapshot.snapshot_type}`;
+
+  fetch(fileUrl, requestOptions)
+    .then((response) => response)
+    .then((result) => {
       var requestOptions = {
         method: "POST",
         headers: fileHeader,
-        body: formdata,
+        body: formdataThumb,
         redirect: "follow",
       };
 
-      const fileUrl =
-        process.env.FILESERVER_URL +
-        `${projectId}/${viewpointId}.${req.body.snapshot.snapshot_type}`;
-
-      const fileUrlThumb =
-        process.env.FILESERVER_URL +
-        `${projectId}/${viewpointId}_thumbnail.${req.body.snapshot.snapshot_type}`;
-
-      fetch(fileUrl, requestOptions)
+      fetch(fileUrlThumb, requestOptions)
         .then((response) => response)
         .then((result) => {
-          var requestOptions = {
-            method: "POST",
-            headers: fileHeader,
-            body: formdataThumb,
-            redirect: "follow",
-          };
+          //TODO: Write Utility for checking codes!
+          if (result.status == 201) {
+            var myHeaders = new fetch.Headers();
+            myHeaders.append(
+              "Content-Type",
+              "application/x-www-form-urlencoded"
+            );
+            myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
-          fetch(fileUrlThumb, requestOptions)
-            .then((response) => response)
-            .then((result) => {
-              //TODO: Write Utility for checking codes!
-              if (result.status == 201) {
-                var myHeaders = new fetch.Headers();
-                myHeaders.append(
-                  "Content-Type",
-                  "application/x-www-form-urlencoded"
-                );
-                myHeaders.append("Authorization", "Basic " + fuseki.auth());
-
-                var urlencoded = new URLSearchParams();
-                urlencoded.append(
-                  "update",
-                  `
+            var urlencoded = new URLSearchParams();
+            urlencoded.append(
+              "update",
+              `
               PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
               PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
@@ -652,46 +642,44 @@ exports.post_viewpoint = (req, res, next) => {
                   bcfOWL:hasTopic project:${topicId} ;
                   bcfOWL:hasSnapshot "${process.env.BCF_URL}files/${projectId}/${viewpointId}.${req.body.snapshot.snapshot_type}"^^xsd:anyURI ;
                   bcfOWL:hasProject project:${projectId} ;\n` +
-                    sparqlConverter.toViewpointSPARQL(req) +
-                    `} WHERE {
+                sparqlConverter.toViewpointSPARQL(req) +
+                `} WHERE {
                   ?s ?p ?o
                   FILTER NOT EXISTS { project:${viewpointId} ?p ?o} 
               }
           `
-                );
+            );
 
-                var requestOptions = {
-                  method: "POST",
-                  headers: myHeaders,
-                  body: urlencoded,
-                  redirect: "follow",
-                };
+            var requestOptions = {
+              method: "POST",
+              headers: myHeaders,
+              body: urlencoded,
+              redirect: "follow",
+            };
 
-                fetch(process.env.FUSEKI_URL + projectId, requestOptions)
-                  .then((result) => {
-                    this.get_viewpoint(req, res, {
-                      bCreated: true,
-                      viewpointId: viewpointId,
-                    });
-                    // res.status(201).json({
-                    //   guid: viewpointId,
-                    //   index: req.body.index,
-                    //   perspective_camera: req.body.perspective_camera,
-                    //   snapshot: {
-                    //     snapshot_type: req.body.snapshot.snapshot_type,
-                    //   },
-                    // });
-                  })
-                  .catch((error) => {
-                    console.log("error", error);
-                  });
-              }
-            })
-            .catch((error) => console.log("error", error));
+            fetch(process.env.FUSEKI_URL + projectId, requestOptions)
+              .then((result) => {
+                this.get_viewpoint(req, res, {
+                  bCreated: true,
+                  viewpointId: viewpointId,
+                });
+                // res.status(201).json({
+                //   guid: viewpointId,
+                //   index: req.body.index,
+                //   perspective_camera: req.body.perspective_camera,
+                //   snapshot: {
+                //     snapshot_type: req.body.snapshot.snapshot_type,
+                //   },
+                // });
+              })
+              .catch((error) => {
+                console.log("error", error);
+              });
+          }
         })
         .catch((error) => console.log("error", error));
     })
-    .catch((err) => console.error(err));
+    .catch((error) => console.log("error", error));
 };
 
 exports.get_snapshot = (req, res, next) => {

@@ -38,6 +38,8 @@ exports.post_file = (req, res, next) => {
 
   var data = new Buffer.from("");
 
+  console.log("Post File Check 1");
+
   req.on("data", function (chunk) {
     data = Buffer.concat([data, chunk]);
   });
@@ -64,9 +66,11 @@ exports.post_file = (req, res, next) => {
       .then((response) => response)
       .then((result) => {
         if (filename.split(".")[1] == "png") {
+          console.log("Post File Check 2");
           const options = { width: 200, height: 200, fit: "cover" };
           imageThumbnail(data, options)
             .then((thumbnail) => {
+              console.log("Post File Check 3");
               var formdata = new FormData();
               formdata.append(
                 "fileStream",
