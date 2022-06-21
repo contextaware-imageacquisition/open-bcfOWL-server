@@ -83,7 +83,6 @@ exports.get_ressource = (req, res, next) => {
     "query",
     `
     DESCRIBE <${process.env.BCF_URL}graph/${projectId}/${ressource}>
-    }
     `
   );
 
