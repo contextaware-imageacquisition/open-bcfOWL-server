@@ -17,7 +17,6 @@
   "license": "MIT",
   "repository": "https://github.com/Design-Computation-RWTH/bcfServer",
   "dependencies": {
-    "base64-buffer-thumbnail": "^1.0.0",
     "basic-auth": "^2.0.1",
     "bcrypt": "^5.0.1",
     "express": "^4.17.1",
