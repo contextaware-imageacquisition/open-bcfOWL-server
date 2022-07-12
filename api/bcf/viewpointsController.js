@@ -611,7 +611,7 @@ exports.post_viewpoint = (req, res, next) => {
       var requestOptions = {
         method: "POST",
         headers: fileHeader,
-        body: formdataThumb,
+        body: formdata,
         redirect: "follow",
       };
 
