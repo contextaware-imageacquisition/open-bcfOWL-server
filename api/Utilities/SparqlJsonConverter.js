@@ -394,6 +394,10 @@ function toViewpointJson(binding) {
   ) {
     convertedValue["perspective_camera"] = binding.o.value;
   } else if (
+    binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasClippingPlane"
+  ) {
+    convertedValue["clipping_planes"] = binding.o.value;
+  } else if (
     binding.p.value == "http://lbd.arch.rwth-aachen.de/bcfOWL#hasIfcGuid"
   ) {
     convertedValue["ifc_guid"] = binding.o.value;
@@ -612,6 +616,7 @@ function toViewpointSPARQL(request) {
   var cameraId = uuid.v4();
   var perspective_camera = "";
   var orthogonal_camera = "";
+  var clipping_planes = "";
   var selection = "";
   var exception = "";
 
@@ -635,10 +640,39 @@ function toViewpointSPARQL(request) {
     `;
   }
 
-  //TODO: add else: orthogonal camera
-  // if (request.body.orthogonal_camera) {
-  //   sparqlString += `\n bcfOWL:hasOrthogonalCamera project:${cameraId} ;`;
-  // }
+  if (request.body.orthogonal_camera) {
+    sparqlString += `\n bcfOWL:hasOrthogonalCamera project:${cameraId} ;`;
+    // console.log(request.body.orthogonal_camera.view_to_world_scale);
+    var aspectRatio;
+    if (request.body.perspective_camera.aspect_ratio) {
+      aspectRatio = request.body.perspective_camera.aspect_ratio;
+    } else {
+      aspectRatio = 0;
+    }
+    orthogonal_camera += `
+                    \n project:${cameraId}
+                      a                          bcfOWL:PerspectiveCamera ;
+                      bcfOWL:hasAspectRatio      "${request.body.perspective_camera.aspect_ratio}"^^xsd:float ;
+                      bcfOWL:hasCameraDirection  "POINT Z(${request.body.perspective_camera.camera_direction.x} ${request.body.perspective_camera.camera_direction.y} ${request.body.perspective_camera.camera_direction.z})"^^geo:wktLiteral ;
+                      bcfOWL:hasCameraUpVector   "POINT Z(${request.body.perspective_camera.camera_up_vector.x} ${request.body.perspective_camera.camera_up_vector.y} ${request.body.perspective_camera.camera_up_vector.z})"^^geo:wktLiteral ;
+                      bcfOWL:hasCameraViewPoint  "POINT Z(${request.body.perspective_camera.camera_view_point.x} ${request.body.perspective_camera.camera_view_point.y} ${request.body.perspective_camera.camera_view_point.z})"^^geo:wktLiteral ;
+                      bcfOWL:hasViewToWorldScale "${request.body.perspective_camera.view_to_world_scale}"^^xsd:float .
+    `;
+  }
+
+  if (request.body.clipping_planes) {
+    const planes = request.body.clipping_planes;
+    for (id in planes) {
+      var planeId = uuid.v4();
+      sparqlString += `\n bcfOWL:hasClippingPlane project:clipping_plane_${planeId} ;`;
+      clipping_planes += `
+                      \n project:clipping_plane_${planeId}
+                        a                          bcfOWL:ClippingPlane ;
+                        bcfOWL:hasLocation  "POINT Z(${planes[id].location.x} ${planes[id].location.y} ${planes[id].location.z})"^^geo:wktLiteral ;
+                        bcfOWL:hasDirection   "POINT Z(${planes[id].direction.x} ${planes[id].direction.y} ${planes[id].direction.z})"^^geo:wktLiteral .
+      `;
+    }
+  }
 
   if (request.body.components.selection) {
     var selectionString = "";
@@ -772,7 +806,11 @@ function toViewpointSPARQL(request) {
   sparqlString = sparqlString.slice(0, -1);
   sparqlString += ".";
   sparqlString +=
-    perspective_camera + orthogonal_camera + selection + exception;
+    perspective_camera +
+    orthogonal_camera +
+    selection +
+    exception +
+    clipping_planes;
 
   return sparqlString;
 }

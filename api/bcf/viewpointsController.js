@@ -4,6 +4,7 @@ const sparqlConverter = require("../Utilities/SparqlJsonConverter");
 const uuid = require("uuid");
 const fuseki = require("../Utilities/FusekiUtilities");
 const jwt = require("jsonwebtoken");
+const wkt = require("wkt");
 
 exports.get_all_viewpoints = (req, res, next) => {
   const projectId = req.params.projectId;
@@ -189,54 +190,59 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
   const projectId = req.params.projectId;
   const topicId = req.params.topicId;
   var myHeaders = new fetch.Headers();
+
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
   myHeaders.append("Authorization", "Basic " + fuseki.auth());
+  myHeaders.append("Accept", "application/ld+json");
 
   var urlencoded = new URLSearchParams();
   urlencoded.append(
     "query",
     `
-    PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#> 
-    PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
-    PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-    
-    SELECT DISTINCT ?s ?p ?o WHERE {
-      {
-        SELECT *
-        WHERE {
-            ?s	bcfOWL:hasTopic project:${topicId} .
-            ?s 	a 	bcfOWL:Viewpoint ;
-                ?p	?o .
-          }
-      } UNION {
-          SELECT *
-        WHERE {
-            ?x	bcfOWL:hasTopic project:${topicId} .
-              ?x	bcfOWL:hasPerspectiveCamera ?s .
-              ?s	a	bcfOWL:PerspectiveCamera ;
-                  ?p ?o .
+    CONSTRUCT {?s ?p ?o}
+      WHERE {
+        { 
+          ?s <http://lbd.arch.rwth-aachen.de/bcfOWL#hasTopic> ?t.
+        ?t <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${topicId}".
+          
+          ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Viewpoint>;
+            ?p ?o.
         }
-      } UNION {
-          SELECT *
-        WHERE {
-            ?x	bcfOWL:hasTopic project:${topicId} .
-              ?x	bcfOWL:hasSelection ?s .
-              ?s	a bcfOWL:Component;
-                ?p ?o .
-        }
-      } UNION {
-          SELECT *
-        WHERE {
-            ?x	bcfOWL:hasTopic project:${topicId} .
-              ?x	bcfOWL:hasException ?s .
-            ?s	a bcfOWL:Component;
-                ?p ?o .
+        UNION
+        { 
+          ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasPerspectiveCamera> ?s.
+        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasTopic> ?t.
+        ?t <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${topicId}".
+      
+          ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#PerspectiveCamera>;
+            ?p ?o. 
+        } UNION { 
+          ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasClippingPlane> ?s.
+        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasTopic> ?t.
+        ?t <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${topicId}".
+      
+          ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#ClippingPlane>;
+            ?p ?o. 
+        } UNION { 
+          ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasException> ?s.
+        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasTopic> ?t.
+        ?t <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${topicId}".
+      
+          ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Exception>;
+            ?p ?o. 
+        } UNION { 
+          ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasSelection> ?s.
+        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasTopic> ?t.
+        ?t <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${topicId}".
+      
+          ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Selection>;
+            ?p ?o. 
         }
       }
-     }
-          `
+    `
   );
 
+  console.log("test");
   var requestOptions = {
     method: "POST",
     headers: myHeaders,
@@ -247,7 +253,69 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
   fetch(process.env.FUSEKI_URL + projectId, requestOptions)
     .then((response) => response.json())
     .then((result) => {
-      var bcfMap = {};
+      let responseJson = [];
+
+      let graph = result["@graph"];
+
+      for (object of graph) {
+        let viewpointObject = {};
+        let clipping_planes = [];
+        console.log("object", object);
+        if (
+          object["@type"] === "http://lbd.arch.rwth-aachen.de/bcfOWL#Viewpoint"
+        ) {
+          viewpointObject.guid = object.hasGuid;
+          viewpointObject.index = object.hasIndex;
+          for (pc of graph) {
+            if (
+              pc["@type"] ===
+              "http://lbd.arch.rwth-aachen.de/bcfOWL#PerspectiveCamera"
+            ) {
+              viewpointObject.perspectie_camera = {
+                camera_view_point: {
+                  x: wkt.parse(pc.hasCameraViewPoint).coordinates[0],
+                  y: wkt.parse(pc.hasCameraViewPoint).coordinates[1],
+                  z: wkt.parse(pc.hasCameraViewPoint).coordinates[2],
+                },
+                camera_direction: {
+                  x: wkt.parse(pc.hasCameraDirection).coordinates[0],
+                  y: wkt.parse(pc.hasCameraDirection).coordinates[1],
+                  z: wkt.parse(pc.hasCameraDirection).coordinates[2],
+                },
+                camera_up_vector: {
+                  x: wkt.parse(pc.hasCameraUpVector).coordinates[0],
+                  y: wkt.parse(pc.hasCameraUpVector).coordinates[1],
+                  z: wkt.parse(pc.hasCameraUpVector).coordinates[2],
+                },
+              };
+            }
+          }
+          for (cp of graph) {
+            if (
+              cp["@type"] ===
+              "http://lbd.arch.rwth-aachen.de/bcfOWL#ClippingPlane"
+            ) {
+              clipping_planes.push({
+                location: {
+                  x: wkt.parse(cp.hasLocation).coordinates[0],
+                  y: wkt.parse(cp.hasLocation).coordinates[1],
+                  z: wkt.parse(cp.hasLocation).coordinates[2],
+                },
+                direction: {
+                  x: wkt.parse(cp.hasDirection).coordinates[0],
+                  y: wkt.parse(cp.hasDirection).coordinates[1],
+                  z: wkt.parse(cp.hasDirection).coordinates[2],
+                },
+              });
+            }
+          }
+          viewpointObject.clipping_planes = clipping_planes;
+          responseJson.push(viewpointObject);
+          console.log(viewpointObject);
+        }
+      }
+      res.status(200).json(responseJson);
+      /* var bcfMap = {};
       var bcfReturn = [];
       for (value in result.results.bindings) {
         var binding = result.results.bindings[value];
@@ -364,7 +432,7 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
         }
       }
       // console.log(bcfMap);
-      res.status(200).json(bcfReturn);
+      res.status(200).json(bcfReturn); */
     })
     .catch((error) => {
       console.log("error", error);
@@ -378,6 +446,7 @@ exports.get_viewpoint = (req, res, created) => {
   var myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
   myHeaders.append("Authorization", "Basic " + fuseki.auth());
+  myHeaders.append("Accept", "application/ld+json");
 
   if (created.bCreated == true) {
     var bCreated = created.bCreated;
@@ -388,47 +457,37 @@ exports.get_viewpoint = (req, res, created) => {
   urlencoded.append(
     "query",
     `
-    PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#> 
-    PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
-    PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-
-    SELECT DISTINCT ?s ?p ?o WHERE {
-    {
-        SELECT *
-        WHERE {
-            ?s	bcfOWL:hasTopic project:${topicId} .
-            ?s	bcfOWL:hasGuid	"${viewpointId}" .
-            ?s 	a 	bcfOWL:Viewpoint ;
-                ?p	?o .
-        }
-    } UNION {
-        SELECT *
-        WHERE {
-            ?x	bcfOWL:hasTopic project:${topicId} .
-            ?x	bcfOWL:hasGuid	"${viewpointId}" .
-            ?x	bcfOWL:hasPerspectiveCamera ?s .
-            ?s	a	bcfOWL:PerspectiveCamera ;
-                ?p ?o .
-        }
-    } UNION {
-        SELECT *
-        WHERE {
-            ?x	bcfOWL:hasTopic project:${topicId} .
-            ?x	bcfOWL:hasGuid	"${viewpointId}" .
-            ?x	bcfOWL:hasSelection ?s .
-            ?s	a bcfOWL:Component;
-                ?p ?o .
-        }
-    } UNION {
-        SELECT *
-        WHERE {
-            ?x	bcfOWL:hasTopic project:${topicId} .
-            ?x	bcfOWL:hasGuid	"${viewpointId}" .
-            ?x	bcfOWL:hasException ?s .
-            ?s	a bcfOWL:Component;
-                ?p ?o .
-        }
-    } 
+    
+    CONSTRUCT {?s ?p ?o}
+    WHERE {
+      { 
+        ?s <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
+        
+        ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Viewpoint>;
+          ?p ?o.
+      }
+      UNION
+      { 
+        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasPerspectiveCamera> ?s.
+        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
+        ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#PerspectiveCamera>;
+          ?p ?o. 
+      } UNION { 
+        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasClippingPlane> ?s.
+        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
+        ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#ClippingPlane>;
+          ?p ?o. 
+      } UNION { 
+        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasException> ?s.
+        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
+        ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Exception>;
+          ?p ?o. 
+      } UNION { 
+        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasSelection> ?s.
+        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
+        ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Selection>;
+          ?p ?o. 
+      }
     }
           `
   );
@@ -443,123 +502,64 @@ exports.get_viewpoint = (req, res, created) => {
   fetch(process.env.FUSEKI_URL + projectId, requestOptions)
     .then((response) => response.json())
     .then((result) => {
-      var bcfMap = {};
-      var bcfReturn = [];
-      for (value in result.results.bindings) {
-        var binding = result.results.bindings[value];
+      let returnJson = {};
+      let planes = [];
+      let graph = result["@graph"];
 
-        if (bcfMap[binding.s.value]) {
-          tempObject = bcfMap[binding.s.value];
-          // check if the value is a selection
-          if (sparqlConverter.toViewpointJson(binding).selection) {
-            // check if the viewpoint already has a selection
-            if (tempObject.selection) {
-              var tempSelect = tempObject.selection;
-              // add the selection to the other ones
-              tempSelect.push(
-                sparqlConverter.toViewpointJson(binding).selection[0]
-              );
-              // replace them in the temp
-              tempObject.selection = tempSelect;
-              bcfMap[binding.s.value] = tempObject;
-            } else {
-              Object.assign(
-                tempObject,
-                sparqlConverter.toViewpointJson(binding)
-              );
-              bcfMap[binding.s.value] = tempObject;
-            }
-          } else if (sparqlConverter.toViewpointJson(binding).exception) {
-            // check if the viewpoint already has a exception
-            if (tempObject.exception) {
-              var tempSelect = tempObject.exception;
-              // add the exception to the other ones
-              tempSelect.push(
-                sparqlConverter.toViewpointJson(binding).exception[0]
-              );
-              // replace them in the temp
-              tempObject.exception = tempSelect;
-              bcfMap[binding.s.value] = tempObject;
-            } else {
-              Object.assign(
-                tempObject,
-                sparqlConverter.toViewpointJson(binding)
-              );
-              bcfMap[binding.s.value] = tempObject;
-            }
-          } else {
-            Object.assign(tempObject, sparqlConverter.toViewpointJson(binding));
-            bcfMap[binding.s.value] = tempObject;
-          }
-        } else {
-          bcfMap[binding.s.value] = sparqlConverter.toViewpointJson(binding);
-        }
-      }
-      for (object in bcfMap) {
-        var tempComponents = {};
-        var tempVisibility = {};
-        var tempSetupHints = {};
-        var tempSelection = {};
-        var tempException = {};
-        var tempViewpoint = {};
+      for (object of graph) {
         if (
-          bcfMap[object].perspective_camera ||
-          bcfMap[object].orthogonal_camera
+          object["@type"] === "http://lbd.arch.rwth-aachen.de/bcfOWL#Viewpoint"
         ) {
-          var viewpointValues = bcfMap[object];
-
-          if (bcfMap[object].perspective_camera) {
-            perspectiveCamera = bcfMap[object].perspective_camera;
-            tempViewpoint["perspective_camera"] = bcfMap[perspectiveCamera];
-          } else if (bcfMap[object].orthogonal_camera) {
-            orthogonalCamera = bcfMap[object].orthogonal_camera;
-            tempViewpoint["orthogonal_camera"] = bcfMap[orthogonalCamera];
-          }
-
-          if (bcfMap[object].selection) {
-            selectionArr = bcfMap[object].selection;
-            tempSelectionArr = [];
-            for (selection in selectionArr) {
-              tempSelectionArr.push(bcfMap[selectionArr[selection]]);
-            }
-            tempSelection = tempSelectionArr;
-          }
-
-          if (bcfMap[object].exception) {
-            exceptionArr = bcfMap[object].exception;
-            tempExceptionArr = [];
-            for (exception in exceptionArr) {
-              tempExceptionArr.push(bcfMap[exceptionArr[exception]]);
-            }
-            tempException = tempExceptionArr;
-          }
-
-          tempViewpoint["guid"] = viewpointValues.guid;
-          tempViewpoint["topic_guid"] = viewpointValues.topic_guid;
-          tempViewpoint["snapshot_type"] = viewpointValues.snapshot_type;
-
-          tempSetupHints["spaces_visible"] = viewpointValues.spaces_visible;
-          tempSetupHints["space_boundaries_visible"] =
-            viewpointValues.space_boundaries_visible;
-          tempSetupHints["openings_visible"] = viewpointValues.openings_visible;
-
-          tempVisibility["default_visibility"] =
-            viewpointValues.default_visibility;
-          tempVisibility["view_setup_hints"] = tempSetupHints;
-          tempVisibility["exceptions"] = tempException;
-
-          tempComponents["visibility"] = tempVisibility;
-          tempComponents["selection"] = tempSelection;
-
-          tempViewpoint["components"] = tempComponents;
-
-          bcfReturn.push(tempViewpoint);
+          returnJson.guid = object.hasGuid;
+          returnJson.index = object.hasIndex;
+          returnJson.snapshot = { snapshot_type: object.hasSnapshotType };
+        } else if (
+          object["@type"] ===
+          "http://lbd.arch.rwth-aachen.de/bcfOWL#PerspectiveCamera"
+        ) {
+          returnJson.perspectie_camera = {
+            camera_view_point: {
+              x: wkt.parse(object.hasCameraViewPoint).coordinates[0],
+              y: wkt.parse(object.hasCameraViewPoint).coordinates[1],
+              z: wkt.parse(object.hasCameraViewPoint).coordinates[2],
+            },
+            camera_direction: {
+              x: wkt.parse(object.hasCameraDirection).coordinates[0],
+              y: wkt.parse(object.hasCameraDirection).coordinates[1],
+              z: wkt.parse(object.hasCameraDirection).coordinates[2],
+            },
+            camera_up_vector: {
+              x: wkt.parse(object.hasCameraUpVector).coordinates[0],
+              y: wkt.parse(object.hasCameraUpVector).coordinates[1],
+              z: wkt.parse(object.hasCameraUpVector).coordinates[2],
+            },
+            field_of_view: object.hasFieldOfView,
+            aspect_ratio: object.hasAspectRatio,
+          };
+        } else if (
+          object["@type"] ===
+          "http://lbd.arch.rwth-aachen.de/bcfOWL#ClippingPlane"
+        ) {
+          planes.push({
+            location: {
+              x: wkt.parse(object.hasLocation).coordinates[0],
+              y: wkt.parse(object.hasLocation).coordinates[1],
+              z: wkt.parse(object.hasLocation).coordinates[2],
+            },
+            direction: {
+              x: wkt.parse(object.hasDirection).coordinates[0],
+              y: wkt.parse(object.hasDirection).coordinates[1],
+              z: wkt.parse(object.hasDirection).coordinates[2],
+            },
+          });
         }
       }
+      returnJson.clipping_planes = planes;
+
       if (bCreated == true) {
-        res.status(201).json(bcfReturn[0]);
+        res.status(201).json(returnJson);
       } else {
-        res.status(200).json(bcfReturn[0]);
+        res.status(200).json(returnJson);
       }
     })
     .catch((error) => {
