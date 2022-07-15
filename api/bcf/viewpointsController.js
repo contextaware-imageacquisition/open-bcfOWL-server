@@ -453,44 +453,43 @@ exports.get_viewpoint = (req, res, created) => {
     viewpointId = created.viewpointId;
   }
 
-  var urlencoded = new URLSearchParams();
-  urlencoded.append(
-    "query",
-    `
+  var query = `
     
-    CONSTRUCT {?s ?p ?o}
-    WHERE {
-      { 
-        ?s <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
-        
-        ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Viewpoint>;
-          ?p ?o.
-      }
-      UNION
-      { 
-        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasPerspectiveCamera> ?s.
-        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
-        ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#PerspectiveCamera>;
-          ?p ?o. 
-      } UNION { 
-        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasClippingPlane> ?s.
-        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
-        ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#ClippingPlane>;
-          ?p ?o. 
-      } UNION { 
-        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasException> ?s.
-        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
-        ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Exception>;
-          ?p ?o. 
-      } UNION { 
-        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasSelection> ?s.
-        ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
-        ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Selection>;
-          ?p ?o. 
-      }
+  CONSTRUCT {?s ?p ?o}
+  WHERE {
+    { 
+      ?s <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
+      
+      ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Viewpoint>;
+        ?p ?o.
     }
-          `
-  );
+    UNION
+    { 
+      ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasPerspectiveCamera> ?s.
+      ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
+      ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#PerspectiveCamera>;
+        ?p ?o. 
+    } UNION { 
+      ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasClippingPlane> ?s.
+      ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
+      ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#ClippingPlane>;
+        ?p ?o. 
+    } UNION { 
+      ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasException> ?s.
+      ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
+      ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Exception>;
+        ?p ?o. 
+    } UNION { 
+      ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasSelection> ?s.
+      ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
+      ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Selection>;
+        ?p ?o. 
+    }
+  }
+        `;
+
+  var urlencoded = new URLSearchParams();
+  urlencoded.append("query", query);
 
   var requestOptions = {
     method: "POST",
@@ -605,34 +604,36 @@ exports.post_viewpoint = (req, res, next) => {
   fetch(fileUrl, requestOptions)
     .then((response) => response)
     .then((result) => {
+      console.log(result);
       //TODO: Write Utility for checking codes!
       if (result.status == 201) {
         var myHeaders = new fetch.Headers();
         myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
         myHeaders.append("Authorization", "Basic " + fuseki.auth());
 
+        var update =
+          `
+        PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
+        PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
+        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+        PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+        
+        INSERT {
+          project:${viewpointId} a bcfOWL:Viewpoint ;
+            bcfOWL:hasGuid "${viewpointId}"^^xsd:string ;
+            bcfOWL:hasTopic project:${topicId} ;
+            bcfOWL:hasSnapshot "${process.env.BCF_URL}files/${projectId}/${viewpointId}.${req.body.snapshot.snapshot_type}"^^xsd:anyURI ;
+            bcfOWL:hasProject project:${projectId} ;\n` +
+          sparqlConverter.toViewpointSPARQL(req) +
+          `} WHERE {
+            ?s ?p ?o
+            FILTER NOT EXISTS { project:${viewpointId} ?p ?o} 
+        }
+    `;
+
+        console.log(update);
         var urlencoded = new URLSearchParams();
-        urlencoded.append(
-          "update",
-          `
-              PREFIX bcfOWL: <http://lbd.arch.rwth-aachen.de/bcfOWL#>
-              PREFIX project: <${process.env.BCF_URL}graph/${projectId}/>
-              PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-              PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-              
-              INSERT {
-                project:${viewpointId} a bcfOWL:Viewpoint ;
-                  bcfOWL:hasGuid "${viewpointId}"^^xsd:string ;
-                  bcfOWL:hasTopic project:${topicId} ;
-                  bcfOWL:hasSnapshot "${process.env.BCF_URL}files/${projectId}/${viewpointId}.${req.body.snapshot.snapshot_type}"^^xsd:anyURI ;
-                  bcfOWL:hasProject project:${projectId} ;\n` +
-            sparqlConverter.toViewpointSPARQL(req) +
-            `} WHERE {
-                  ?s ?p ?o
-                  FILTER NOT EXISTS { project:${viewpointId} ?p ?o} 
-              }
-          `
-        );
+        urlencoded.append("update", update);
 
         var requestOptions = {
           method: "POST",
@@ -661,7 +662,10 @@ exports.post_viewpoint = (req, res, next) => {
           });
       }
     })
-    .catch((error) => console.log("error", error));
+    .catch((error) => {
+      res.status(500).json(error);
+      console.log("error", error);
+    });
 };
 
 exports.get_snapshot = (req, res, next) => {

@@ -693,7 +693,7 @@ function toViewpointSPARQL(request) {
       if (
         request.body.components.selection[selectionElement].originating_system
       ) {
-        componentString += `\n bcfOWL:hasOriginatingSystem  project:${request.body.components.selection[selectionElement].originating_system} ;`;
+        componentString += `\n bcfOWL:hasOriginatingSystem  "${request.body.components.selection[selectionElement].originating_system}"^^xsd:string ;`;
       }
       if (
         request.body.components.selection[selectionElement].authoring_tool_id
