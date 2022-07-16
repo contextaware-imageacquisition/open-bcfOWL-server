@@ -516,7 +516,7 @@ exports.get_viewpoint = (req, res, created) => {
           object["@type"] ===
           "http://lbd.arch.rwth-aachen.de/bcfOWL#PerspectiveCamera"
         ) {
-          returnJson.perspectie_camera = {
+          returnJson.perspective_camera = {
             camera_view_point: {
               x: wkt.parse(object.hasCameraViewPoint).coordinates[0],
               y: wkt.parse(object.hasCameraViewPoint).coordinates[1],
@@ -631,7 +631,6 @@ exports.post_viewpoint = (req, res, next) => {
         }
     `;
 
-        console.log(update);
         var urlencoded = new URLSearchParams();
         urlencoded.append("update", update);
 
