@@ -674,45 +674,132 @@ function toViewpointSPARQL(request) {
     }
   }
 
-  if (request.body.components.selection) {
-    var selectionString = "";
+  if (request.body.components) {
+    if (request.body.components.selection) {
+      var selectionString = "";
 
-    for (selectionElement in request.body.components.selection) {
-      // convert guid from compressed to full
-      selectionString += ` project:${guid.Guid.fromCompressedToFull(
-        request.body.components.selection[selectionElement].ifc_guid
-      )}, `;
-
-      // constructing the selection components
-
-      if (request.body.components.selection[selectionElement].ifc_guid) {
-        var componentString = `\n project:${guid.Guid.fromCompressedToFull(
+      for (selectionElement in request.body.components.selection) {
+        // convert guid from compressed to full
+        selectionString += ` project:${guid.Guid.fromCompressedToFull(
           request.body.components.selection[selectionElement].ifc_guid
-        )} a bcfOWL:Component ;`;
-      }
-      if (
-        request.body.components.selection[selectionElement].originating_system
-      ) {
-        componentString += `\n bcfOWL:hasOriginatingSystem  "${request.body.components.selection[selectionElement].originating_system}"^^xsd:string ;`;
-      }
-      if (
-        request.body.components.selection[selectionElement].authoring_tool_id
-      ) {
-        componentString += `\n bcfOWL:hasAuthoringToolId  "${request.body.components.selection[selectionElement].authoring_tool_id}"^^xsd:string ;`;
-      }
-      if (request.body.components.selection[selectionElement].ifc_guid) {
-        componentString += `\n bcfOWL:hasIfcGuid  "${request.body.components.selection[selectionElement].ifc_guid}"^^xsd:string ;`;
-      }
-      componentString = componentString.slice(0, -1) + `. \n`;
+        )}, `;
 
-      selection += componentString;
+        // constructing the selection components
+
+        if (request.body.components.selection[selectionElement].ifc_guid) {
+          var componentString = `\n project:${guid.Guid.fromCompressedToFull(
+            request.body.components.selection[selectionElement].ifc_guid
+          )} a bcfOWL:Component ;`;
+        }
+        if (
+          request.body.components.selection[selectionElement].originating_system
+        ) {
+          componentString += `\n bcfOWL:hasOriginatingSystem  "${request.body.components.selection[selectionElement].originating_system}"^^xsd:string ;`;
+        }
+        if (
+          request.body.components.selection[selectionElement].authoring_tool_id
+        ) {
+          componentString += `\n bcfOWL:hasAuthoringToolId  "${request.body.components.selection[selectionElement].authoring_tool_id}"^^xsd:string ;`;
+        }
+        if (request.body.components.selection[selectionElement].ifc_guid) {
+          componentString += `\n bcfOWL:hasIfcGuid  "${request.body.components.selection[selectionElement].ifc_guid}"^^xsd:string ;`;
+        }
+        componentString = componentString.slice(0, -1) + `. \n`;
+
+        selection += componentString;
+      }
+
+      if (selectionString != "") {
+        sparqlString += `\n bcfOWL:hasSelection ${selectionString.slice(
+          0,
+          -2
+        )} ;`;
+      }
     }
+    if (request.body.components.visibility.exceptions) {
+      var exceptionString = "";
 
-    if (selectionString != "") {
-      sparqlString += `\n bcfOWL:hasSelection ${selectionString.slice(
+      for (exceptionElement in request.body.components.visibility.exceptions) {
+        exceptionString += ` project:${guid.Guid.fromCompressedToFull(
+          request.body.components.visibility.exceptions[exceptionElement]
+            .ifc_guid
+        )}, `;
+
+        // constructing the selection components
+
+        if (
+          request.body.components.visibility.exceptions[exceptionElement]
+            .ifc_guid
+        ) {
+          var componentString = `\n project:${guid.Guid.fromCompressedToFull(
+            request.body.components.visibility.exceptions[exceptionElement]
+              .ifc_guid
+          )} a bcfOWL:Component ;`;
+        }
+        //   var componentString = `project:${request.body.components.selection[selectionElement].authoring_tool_id} a bcfOWL:Component ;`;
+        // }
+
+        if (
+          request.body.components.visibility.exceptions[exceptionElement]
+            .originating_system
+        ) {
+          componentString += `\n bcfOWL:hasOriginatingSystem  project:${request.body.components.visibility.exceptions[exceptionElement].originating_system} ;`;
+        }
+        if (
+          request.body.components.visibility.exceptions[exceptionElement]
+            .authoring_tool_id
+        ) {
+          componentString += `\n bcfOWL:hasAuthoringToolId  "${request.body.components.visibility.exceptions[exceptionElement].authoring_tool_id}"^^xsd:string ;`;
+        }
+        if (
+          request.body.components.visibility.exceptions[exceptionElement]
+            .ifc_guid
+        ) {
+          componentString += `\n bcfOWL:hasIfcGuid  "${request.body.components.visibility.exceptions[exceptionElement].ifc_guid}"^^xsd:string ;`;
+        }
+        componentString = componentString.slice(0, -1) + `. \n`;
+
+        exception += componentString;
+      }
+
+      sparqlString += `\n bcfOWL:hasException ${exceptionString.slice(
         0,
         -2
       )} ;`;
+    }
+
+    if (
+      request.body.components.visibility.view_setup_hints.openings_visible ==
+        true ||
+      request.body.components.visibility.view_setup_hints.openings_visible ==
+        false
+    ) {
+      sparqlString += `\n bcfOWL:openingsVisible ${request.body.components.visibility.view_setup_hints.openings_visible} ;`;
+    }
+
+    if (
+      request.body.components.visibility.view_setup_hints
+        .space_boundaries_visible == true ||
+      request.body.components.visibility.view_setup_hints
+        .space_boundaries_visible == false
+    ) {
+      sparqlString += `\n bcfOWL:spaceBoundariesVisible ${request.body.components.visibility.view_setup_hints.space_boundaries_visible} ;`;
+    }
+
+    if (
+      request.body.components.visibility.view_setup_hints.spaces_visible ==
+        true ||
+      request.body.components.visibility.view_setup_hints.spaces_visible ==
+        false
+    ) {
+      sparqlString += `\n bcfOWL:spacesVisible ${request.body.components.visibility.view_setup_hints.spaces_visible} ;`;
+    }
+
+    if (
+      request.body.components.visibility.default_visibility == true ||
+      request.body.components.visibility.default_visibility == false
+    ) {
+      sparqlString += `\n bcfOWL:hasDefaulVisibility ${request.body.components.visibility.default_visibility} ;`;
     }
   }
 
@@ -721,84 +808,6 @@ function toViewpointSPARQL(request) {
     //TODO: add bcfOWL:hasSnapshotType... find Ontology for Types?
   }
 
-  if (request.body.components.visibility.exceptions) {
-    var exceptionString = "";
-
-    for (exceptionElement in request.body.components.visibility.exceptions) {
-      exceptionString += ` project:${guid.Guid.fromCompressedToFull(
-        request.body.components.visibility.exceptions[exceptionElement].ifc_guid
-      )}, `;
-
-      // constructing the selection components
-
-      if (
-        request.body.components.visibility.exceptions[exceptionElement].ifc_guid
-      ) {
-        var componentString = `\n project:${guid.Guid.fromCompressedToFull(
-          request.body.components.visibility.exceptions[exceptionElement]
-            .ifc_guid
-        )} a bcfOWL:Component ;`;
-      }
-      //   var componentString = `project:${request.body.components.selection[selectionElement].authoring_tool_id} a bcfOWL:Component ;`;
-      // }
-
-      if (
-        request.body.components.visibility.exceptions[exceptionElement]
-          .originating_system
-      ) {
-        componentString += `\n bcfOWL:hasOriginatingSystem  project:${request.body.components.visibility.exceptions[exceptionElement].originating_system} ;`;
-      }
-      if (
-        request.body.components.visibility.exceptions[exceptionElement]
-          .authoring_tool_id
-      ) {
-        componentString += `\n bcfOWL:hasAuthoringToolId  "${request.body.components.visibility.exceptions[exceptionElement].authoring_tool_id}"^^xsd:string ;`;
-      }
-      if (
-        request.body.components.visibility.exceptions[exceptionElement].ifc_guid
-      ) {
-        componentString += `\n bcfOWL:hasIfcGuid  "${request.body.components.visibility.exceptions[exceptionElement].ifc_guid}"^^xsd:string ;`;
-      }
-      componentString = componentString.slice(0, -1) + `. \n`;
-
-      exception += componentString;
-    }
-
-    sparqlString += `\n bcfOWL:hasException ${exceptionString.slice(0, -2)} ;`;
-  }
-
-  if (
-    request.body.components.visibility.view_setup_hints.openings_visible ==
-      true ||
-    request.body.components.visibility.view_setup_hints.openings_visible ==
-      false
-  ) {
-    sparqlString += `\n bcfOWL:openingsVisible ${request.body.components.visibility.view_setup_hints.openings_visible} ;`;
-  }
-
-  if (
-    request.body.components.visibility.view_setup_hints
-      .space_boundaries_visible == true ||
-    request.body.components.visibility.view_setup_hints
-      .space_boundaries_visible == false
-  ) {
-    sparqlString += `\n bcfOWL:spaceBoundariesVisible ${request.body.components.visibility.view_setup_hints.space_boundaries_visible} ;`;
-  }
-
-  if (
-    request.body.components.visibility.view_setup_hints.spaces_visible ==
-      true ||
-    request.body.components.visibility.view_setup_hints.spaces_visible == false
-  ) {
-    sparqlString += `\n bcfOWL:spacesVisible ${request.body.components.visibility.view_setup_hints.spaces_visible} ;`;
-  }
-
-  if (
-    request.body.components.visibility.default_visibility == true ||
-    request.body.components.visibility.default_visibility == false
-  ) {
-    sparqlString += `\n bcfOWL:hasDefaulVisibility ${request.body.components.visibility.default_visibility} ;`;
-  }
   if (request.body.originating_document) {
     sparqlString += `\n bcfOWL:hasOriginatingDocument "${request.body.originating_document}"^^xsd:string ;`;
   }
