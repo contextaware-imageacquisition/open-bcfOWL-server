@@ -271,7 +271,7 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
               pc["@type"] ===
               "http://lbd.arch.rwth-aachen.de/bcfOWL#PerspectiveCamera"
             ) {
-              viewpointObject.perspectie_camera = {
+              viewpointObject.perspective_camera = {
                 camera_view_point: {
                   x: wkt.parse(pc.hasCameraViewPoint).coordinates[0],
                   y: wkt.parse(pc.hasCameraViewPoint).coordinates[1],
