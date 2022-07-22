@@ -257,37 +257,52 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
 
       let graph = result["@graph"];
 
+      //console.log(graph);
+
       for (object of graph) {
         let viewpointObject = {};
         let clipping_planes = [];
-        console.log("object", object);
+        let clippingPlaneIds = [];
+        let perspectiveId = "";
         if (
           object["@type"] === "http://lbd.arch.rwth-aachen.de/bcfOWL#Viewpoint"
         ) {
           viewpointObject.guid = object.hasGuid;
           viewpointObject.index = object.hasIndex;
+          if (object.hasPerspectiveCamera) {
+            perspectiveId = object.hasPerspectiveCamera;
+          }
+          if (object.hasClippingPlane) {
+            clippingPlaneIds = object.hasClippingPlane;
+          }
+
+          console.log("clippingPlanes", clippingPlaneIds);
           for (pc of graph) {
             if (
               pc["@type"] ===
               "http://lbd.arch.rwth-aachen.de/bcfOWL#PerspectiveCamera"
             ) {
-              viewpointObject.perspective_camera = {
-                camera_view_point: {
-                  x: wkt.parse(pc.hasCameraViewPoint).coordinates[0],
-                  y: wkt.parse(pc.hasCameraViewPoint).coordinates[1],
-                  z: wkt.parse(pc.hasCameraViewPoint).coordinates[2],
-                },
-                camera_direction: {
-                  x: wkt.parse(pc.hasCameraDirection).coordinates[0],
-                  y: wkt.parse(pc.hasCameraDirection).coordinates[1],
-                  z: wkt.parse(pc.hasCameraDirection).coordinates[2],
-                },
-                camera_up_vector: {
-                  x: wkt.parse(pc.hasCameraUpVector).coordinates[0],
-                  y: wkt.parse(pc.hasCameraUpVector).coordinates[1],
-                  z: wkt.parse(pc.hasCameraUpVector).coordinates[2],
-                },
-              };
+              if (pc["@id"] === perspectiveId) {
+                viewpointObject.perspective_camera = {
+                  camera_view_point: {
+                    x: wkt.parse(pc.hasCameraViewPoint).coordinates[0],
+                    y: wkt.parse(pc.hasCameraViewPoint).coordinates[1],
+                    z: wkt.parse(pc.hasCameraViewPoint).coordinates[2],
+                  },
+                  camera_direction: {
+                    x: wkt.parse(pc.hasCameraDirection).coordinates[0],
+                    y: wkt.parse(pc.hasCameraDirection).coordinates[1],
+                    z: wkt.parse(pc.hasCameraDirection).coordinates[2],
+                  },
+                  camera_up_vector: {
+                    x: wkt.parse(pc.hasCameraUpVector).coordinates[0],
+                    y: wkt.parse(pc.hasCameraUpVector).coordinates[1],
+                    z: wkt.parse(pc.hasCameraUpVector).coordinates[2],
+                  },
+                  aspect_ratio: pc.hasAspectRatio,
+                  field_of_view: pc.hasFieldOfView,
+                };
+              }
             }
           }
           for (cp of graph) {
@@ -295,23 +310,25 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
               cp["@type"] ===
               "http://lbd.arch.rwth-aachen.de/bcfOWL#ClippingPlane"
             ) {
-              clipping_planes.push({
-                location: {
-                  x: wkt.parse(cp.hasLocation).coordinates[0],
-                  y: wkt.parse(cp.hasLocation).coordinates[1],
-                  z: wkt.parse(cp.hasLocation).coordinates[2],
-                },
-                direction: {
-                  x: wkt.parse(cp.hasDirection).coordinates[0],
-                  y: wkt.parse(cp.hasDirection).coordinates[1],
-                  z: wkt.parse(cp.hasDirection).coordinates[2],
-                },
-              });
+              if (clippingPlaneIds.includes(cp["@id"])) {
+                clipping_planes.push({
+                  location: {
+                    x: wkt.parse(cp.hasLocation).coordinates[0],
+                    y: wkt.parse(cp.hasLocation).coordinates[1],
+                    z: wkt.parse(cp.hasLocation).coordinates[2],
+                  },
+                  direction: {
+                    x: wkt.parse(cp.hasDirection).coordinates[0],
+                    y: wkt.parse(cp.hasDirection).coordinates[1],
+                    z: wkt.parse(cp.hasDirection).coordinates[2],
+                  },
+                });
+              }
             }
           }
           viewpointObject.clipping_planes = clipping_planes;
           responseJson.push(viewpointObject);
-          console.log(viewpointObject);
+          // console.log(viewpointObject);
         }
       }
       res.status(200).json(responseJson);
