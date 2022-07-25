@@ -235,7 +235,7 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
         ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasTopic> ?t.
         ?t <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${topicId}".
       
-          ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Selection>;
+        ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Component>;
             ?p ?o. 
         }
       }
@@ -263,6 +263,8 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
         let viewpointObject = {};
         let clipping_planes = [];
         let clippingPlaneIds = [];
+        let selectionIds = [];
+        let selection = [];
         let perspectiveId = "";
         if (
           object["@type"] === "http://lbd.arch.rwth-aachen.de/bcfOWL#Viewpoint"
@@ -275,8 +277,10 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
           if (object.hasClippingPlane) {
             clippingPlaneIds = object.hasClippingPlane;
           }
+          if (object.hasSelection) {
+            selectionIds = object.hasSelection;
+          }
 
-          console.log("clippingPlanes", clippingPlaneIds);
           for (pc of graph) {
             if (
               pc["@type"] ===
@@ -326,130 +330,43 @@ exports.get_all_topic_viewpoints = (req, res, next) => {
               }
             }
           }
+          for (sel of graph) {
+            if (
+              sel["@type"] === "http://lbd.arch.rwth-aachen.de/bcfOWL#Component"
+            ) {
+              if (selectionIds.includes(sel["@id"])) {
+                let singleSelection = {};
+                console.log("component", object);
+                if (sel["hasIfcGuid"]) {
+                  singleSelection.ifc_guid = sel["hasIfcGuid"];
+                }
+                if (sel["hasOriginatingSystem"]) {
+                  if (sel["hasOriginatingSystem"].length > 1) {
+                    singleSelection.originating_system =
+                      sel["hasOriginatingSystem"][0];
+                  } else {
+                    singleSelection.originating_system =
+                      sel["hasOriginatingSystem"];
+                  }
+                }
+                if (sel["hasAuthoringToolId"]) {
+                  console.log("id", object["hasAuthoringToolId"]);
+                  singleSelection.authoring_tool_id = sel["hasAuthoringToolId"];
+                }
+                selection.push(singleSelection);
+                console.log("singleSelection", singleSelection);
+              }
+            }
+          }
           viewpointObject.clipping_planes = clipping_planes;
+          let components = {};
+          components.selection = selection;
+          viewpointObject.components = components;
           responseJson.push(viewpointObject);
           // console.log(viewpointObject);
         }
       }
       res.status(200).json(responseJson);
-      /* var bcfMap = {};
-      var bcfReturn = [];
-      for (value in result.results.bindings) {
-        var binding = result.results.bindings[value];
-
-        if (bcfMap[binding.s.value]) {
-          tempObject = bcfMap[binding.s.value];
-          // check if the value is a selection
-          if (sparqlConverter.toViewpointJson(binding).selection) {
-            // check if the viewpoint already has a selection
-            if (tempObject.selection) {
-              var tempSelect = tempObject.selection;
-              // add the selection to the other ones
-              tempSelect.push(
-                sparqlConverter.toViewpointJson(binding).selection[0]
-              );
-              // replace them in the temp
-              tempObject.selection = tempSelect;
-              bcfMap[binding.s.value] = tempObject;
-            } else {
-              Object.assign(
-                tempObject,
-                sparqlConverter.toViewpointJson(binding)
-              );
-              bcfMap[binding.s.value] = tempObject;
-            }
-          } else if (sparqlConverter.toViewpointJson(binding).exception) {
-            // check if the viewpoint already has a exception
-            if (tempObject.exception) {
-              var tempSelect = tempObject.exception;
-              // add the exception to the other ones
-              tempSelect.push(
-                sparqlConverter.toViewpointJson(binding).exception[0]
-              );
-              // replace them in the temp
-              tempObject.exception = tempSelect;
-              bcfMap[binding.s.value] = tempObject;
-            } else {
-              Object.assign(
-                tempObject,
-                sparqlConverter.toViewpointJson(binding)
-              );
-              bcfMap[binding.s.value] = tempObject;
-            }
-          } else {
-            Object.assign(tempObject, sparqlConverter.toViewpointJson(binding));
-            bcfMap[binding.s.value] = tempObject;
-          }
-        } else {
-          bcfMap[binding.s.value] = sparqlConverter.toViewpointJson(binding);
-        }
-      }
-      for (object in bcfMap) {
-        var tempComponents = {};
-        var tempVisibility = {};
-        var tempSetupHints = {};
-        var tempSelection = {};
-        var tempException = {};
-        var tempViewpoint = {};
-        if (
-          bcfMap[object].perspective_camera ||
-          bcfMap[object].orthogonal_camera
-        ) {
-          var viewpointValues = bcfMap[object];
-
-          if (bcfMap[object].perspective_camera) {
-            perspectiveCamera = bcfMap[object].perspective_camera;
-            tempViewpoint["perspective_camera"] = bcfMap[perspectiveCamera];
-          } else if (bcfMap[object].orthogonal_camera) {
-            orthogonalCamera = bcfMap[object].orthogonal_camera;
-            tempViewpoint["orthogonal_camera"] = bcfMap[orthogonalCamera];
-          }
-
-          if (bcfMap[object].selection) {
-            console.log(bcfMap[object].selection);
-            selectionArr = bcfMap[object].selection;
-            tempSelectionArr = [];
-            for (selection in selectionArr) {
-              console.log(bcfMap[selectionArr[selection]]);
-              tempSelectionArr.push(bcfMap[selectionArr[selection]]);
-            }
-            tempSelection = tempSelectionArr;
-          }
-
-          if (bcfMap[object].exception) {
-            exceptionArr = bcfMap[object].exception;
-            tempExceptionArr = [];
-            for (exception in exceptionArr) {
-              tempExceptionArr.push(bcfMap[exceptionArr[exception]]);
-            }
-            tempException = tempExceptionArr;
-          }
-
-          tempViewpoint["guid"] = viewpointValues.guid;
-          tempViewpoint["topic_guid"] = viewpointValues.topic_guid;
-          tempViewpoint["originating_document"] =
-            viewpointValues.originating_document;
-
-          tempSetupHints["spaces_visible"] = viewpointValues.spaces_visible;
-          tempSetupHints["space_boundaries_visible"] =
-            viewpointValues.space_boundaries_visible;
-          tempSetupHints["openings_visible"] = viewpointValues.openings_visible;
-
-          tempVisibility["default_visibility"] =
-            viewpointValues.default_visibility;
-          tempVisibility["view_setup_hints"] = tempSetupHints;
-          tempVisibility["exceptions"] = tempException;
-
-          tempComponents["visibility"] = tempVisibility;
-          tempComponents["selection"] = tempSelection;
-
-          tempViewpoint["components"] = tempComponents;
-
-          bcfReturn.push(tempViewpoint);
-        }
-      }
-      // console.log(bcfMap);
-      res.status(200).json(bcfReturn); */
     })
     .catch((error) => {
       console.log("error", error);
@@ -499,7 +416,7 @@ exports.get_viewpoint = (req, res, created) => {
     } UNION { 
       ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasSelection> ?s.
       ?vp <http://lbd.arch.rwth-aachen.de/bcfOWL#hasGuid> "${viewpointId}".
-      ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Selection>;
+      ?s a <http://lbd.arch.rwth-aachen.de/bcfOWL#Component>;
         ?p ?o. 
     }
   }
@@ -520,6 +437,8 @@ exports.get_viewpoint = (req, res, created) => {
     .then((result) => {
       let returnJson = {};
       let planes = [];
+      let selection = [];
+      let components = {};
       let graph = result["@graph"];
 
       for (object of graph) {
@@ -568,9 +487,36 @@ exports.get_viewpoint = (req, res, created) => {
               z: wkt.parse(object.hasDirection).coordinates[2],
             },
           });
+        } else if (
+          object["@type"] === "http://lbd.arch.rwth-aachen.de/bcfOWL#Component"
+        ) {
+          let singleSelection = {};
+          console.log("component", object);
+          if (object["hasIfcGuid"]) {
+            console.log("guid", object.hasIfcGuid);
+            singleSelection.ifc_guid = object["hasIfcGuid"];
+          }
+          if (object["hasOriginatingSystem"]) {
+            if (object["hasOriginatingSystem"].length > 1) {
+              singleSelection.originating_system =
+                object["hasOriginatingSystem"][0];
+            } else {
+              singleSelection.originating_system =
+                object["hasOriginatingSystem"];
+            }
+            console.log("system", object["hasOriginatingSystem"]);
+          }
+          if (object["hasAuthoringToolId"]) {
+            console.log("id", object["hasAuthoringToolId"]);
+            singleSelection.authoring_tool_id = object["hasAuthoringToolId"];
+          }
+          selection.push(singleSelection);
+          console.log("singleSelection", singleSelection);
         }
       }
       returnJson.clipping_planes = planes;
+      components.selection = selection;
+      returnJson.components = components;
 
       if (bCreated == true) {
         res.status(201).json(returnJson);
