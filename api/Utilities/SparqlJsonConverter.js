@@ -8,14 +8,14 @@ function splitURI(URI) {
     var stringArray = URI.split("/");
   }
   var string = stringArray[stringArray.length - 1];
-  return string.replace("_", " ");
+  return string.replaceAll("_", " ");
 }
 
 function setExtensionString(extension) {
   string = "";
 
   for (value in extension) {
-    string += ` project:${extension[value].replace(" ", "_")},`;
+    string += ` project:${extension[value].replaceAll(" ", "_")},`;
   }
   string = string.slice(0, -1) + ";";
 

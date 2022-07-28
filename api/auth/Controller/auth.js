@@ -41,7 +41,7 @@ exports.auth_signup = (req, res, next) => {
               _id: new mongoose.Types.ObjectId(),
               id: req.body.id,
               name: req.body.name,
-              URI: `${req.body.name.replace(" ", "_")}_${userId}`,
+              URI: `${req.body.name.replaceAll(" ", "_")}_${userId}`,
               password: hash,
               role: req.body.role,
             });
@@ -60,10 +60,10 @@ exports.auth_signup = (req, res, next) => {
                   "update",
                   `
                   PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-                  PREFIX users: <http://my-bcf-url/users#>
+                  PREFIX users: <${process.env.BCF_URL}users/>
 
                   INSERT {
-                  users:${req.body.name.replace(" ", "_")}_${userId}
+                  users:${req.body.name.replaceAll(" ", "_")}_${userId}
                       a       foaf:Person ;
                       foaf:mbox <mailto:${req.body.id}> ;
                       foaf:name "${req.body.name}" .

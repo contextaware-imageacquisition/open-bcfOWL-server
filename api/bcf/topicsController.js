@@ -205,7 +205,7 @@ exports.post_topic = (req, res, next) => {
   }
   var authorName = jwt.decode(req.headers.authorization.split(" ")[1]).name;
   var authorMail = jwt.decode(req.headers.authorization.split(" ")[1]).id;
-  authorName = authorName.replace(" ", "_");
+  authorName = authorName.replaceAll(" ", "_");
 
   var timestamp = new Date(Date.now()).toISOString();
 
@@ -307,7 +307,7 @@ exports.put_topic = (req, res, next) => {
 
   var authorName = jwt.decode(req.headers.authorization.split(" ")[1]).name;
   var authorMail = jwt.decode(req.headers.authorization.split(" ")[1]).id;
-  authorName = authorName.replace(" ", "_");
+  authorName = authorName.replaceAll(" ", "_");
 
   var timestamp = new Date(Date.now()).toISOString();
 
