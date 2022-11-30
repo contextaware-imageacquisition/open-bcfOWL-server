@@ -1,6 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
+const frameguard = require("frameguard");
 
 const swaggerUi = require("swagger-ui-express"),
   swaggerDocument = require("./api/bcfAPI.json");
@@ -31,6 +32,7 @@ app.use(express.urlencoded({ limit: "5mb", extended: false }));
 app.use(express.json({ limit: "200mb" }));
 //app.use(express.urlencoded({ limit: "5mb" }));
 app.use(express.json());
+app.use(frameguard({ action: "sameorigin" }));
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
